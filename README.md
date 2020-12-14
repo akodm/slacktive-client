@@ -1,4 +1,2 @@
 # Cedar Slacktive Repo
-Client
-
-- Jun&Yul&
+- Jun & Yul & Min
