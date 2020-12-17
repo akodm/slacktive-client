@@ -1,6 +1,6 @@
 import React from 'react';
 
-function MyPage(props) {
+function EtcPage(props) {
   return (
     <div>
       
@@ -8,4 +8,4 @@ function MyPage(props) {
   );
 }
 
-export default MyPage;
+export default EtcPage;

@@ -7,11 +7,22 @@ import moment from 'moment';
 import 'moment/locale/ko';
 import { Provider } from 'react-redux';
 import store from './store';
+import { createGlobalStyle } from 'styled-components';
+import reset from 'styled-reset';
+
 moment.locale('ko');
+
+const ResetCss = createGlobalStyle`
+  ${reset};
+  a {
+    text-decoration: none;
+  }
+`;
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
+      <ResetCss />
       <App />
     </Provider>
   </React.StrictMode>,
