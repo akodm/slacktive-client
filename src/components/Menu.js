@@ -8,16 +8,19 @@ import ListOutlinedIcon from '@material-ui/icons/ListOutlined';
 
 const Container = styled.div`
   width: 90px;
-  height: 100vh;
+  height: 100%;
   box-shadow: 3px 2px 8px 0px rgba(0, 0, 0, 0.16);
-  position: relative;
+  left: 0px;
+  position: fixed;
 
   @media (max-width: 375px) {
     width: 100vw;
     height: 40px;
     left: 0px;
     bottom: 0px;
-    position: absolute;
+    background-color: white;
+    position: fixed;
+    z-index: 1000;
   }
 `;
 
@@ -68,27 +71,29 @@ const SideBorder = styled.div`
 const CalendarIcon = styled(DateRangeOutlinedIcon)`
   color: white;
   @media (max-width: 375px) {
-    color: ${props => props.index === 0 ? "#6c84ff" : "white"};
+    color: ${props => props.index === 0 ? "#6c84ff" : "#777777"};
   }
 `;
 const ProfileIcon = styled(AccountCircleOutlinedIcon)`
   color: white;
   @media (max-width: 375px) {
-    color: ${props => props.index === 1 ? "#6c84ff" : "white"};
+    color: ${props => props.index === 1 ? "#6c84ff" : "#777777"};
   }
 `;
 const CompanyIcon = styled(BusinessOutlinedIcon)`
   color: white;
   @media (max-width: 375px) {
-    color: ${props => props.index === 2 ? "#6c84ff" : "white"};
+    color: ${props => props.index === 2 ? "#6c84ff" : "#777777"};
   }
 `;
 const EtcIcon = styled(ListOutlinedIcon)`
   color: white;
   @media (max-width: 375px) {
-    color: ${props => props.index === 3 ? "#6c84ff" : "white"};
+    color: ${props => props.index === 3 ? "#6c84ff" : "#777777"};
   }
 `;
+
+const buttonSliderBarHeight = 60;
 
 function Menu(props) {
   const { path } = props;
@@ -118,19 +123,8 @@ function Menu(props) {
   ], [history, color]);
 
   const position = useMemo(() => {
-    if(path === "/calendar") {
-      return 0;
-    }
-    if(path === "/my") {
-      return 60;
-    }
-    if(path === "/group") {
-      return 120;
-    }
-    if(path === "/etc") {
-      return 180;
-    }
-  }, [path]);
+    return buttonSliderBarHeight * color;
+  }, [color]);
 
   return (
     <Container>

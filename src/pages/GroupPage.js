@@ -1,10 +1,11 @@
 import React from 'react';
+import { AnimatedWrapper } from '../components/PageAnim';
 
 function GroupPage(props) {
   return (
-    <div>
-      
-    </div>
+    <AnimatedWrapper>
+      Group Page
+    </AnimatedWrapper>
   );
 }
 

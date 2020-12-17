@@ -14,6 +14,20 @@ moment.locale('ko');
 
 const ResetCss = createGlobalStyle`
   ${reset};
+  div::-webkit-scrollbar {
+    display: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+  html, body, div {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   a {
     text-decoration: none;
   }

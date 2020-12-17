@@ -1,10 +1,11 @@
 import React from 'react';
+import { AnimatedWrapper } from '../components/PageAnim';
 
 function EtcPage(props) {
   return (
-    <div>
-      
-    </div>
+    <AnimatedWrapper>
+      ETC
+    </AnimatedWrapper>
   );
 }
 

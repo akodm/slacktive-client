@@ -1,10 +1,11 @@
 import React from 'react';
+import { AnimatedWrapper } from '../components/PageAnim';
 
 function MyPage(props) {
   return (
-    <div>
-      
-    </div>
+    <AnimatedWrapper>
+      My H
+    </AnimatedWrapper>
   );
 }
 
