@@ -1,12 +1,12 @@
 import React from 'react';
 import { AnimatedWrapper } from '../components/PageAnim';
 
-function GroupPage(props) {
+function EtcPage(props) {
   return (
     <AnimatedWrapper>
-      Group Page
+      ETC
     </AnimatedWrapper>
   );
 }
 
-export default GroupPage;
+export default EtcPage;
