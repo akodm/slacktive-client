@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
@@ -13,7 +13,11 @@ import Menu from '../components/Menu';
 const Container = styled.div`
   width: 100%;
   min-height: 100vh;
-  background-image: linear-gradient(to top, ${props => props.back || `#94d0f2, #7ea4ef`});
+  ${props => !props.first &&
+    css`
+      background-image: linear-gradient(to top, ${props => props.back || `#94d0f2, #7ea4ef`});
+    `
+  }
   overflow: hidden;
   position: relative;
 `;
@@ -40,8 +44,10 @@ function Index(props) {
     }
   }, [location?.pathname]);
 
+  const firstPage = useMemo(() => location?.pathname === "/" ? true : false, [location?.pathname]);
+
   return (
-    <Container back={backgroundColorChange}>
+    <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
       <Switch>
         <Route exact path="/"><FirstPage /></Route>
