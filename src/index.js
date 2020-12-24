@@ -26,6 +26,7 @@ const ResetCss = createGlobalStyle`
   html, body, div {
     -ms-overflow-style: none;
     scrollbar-width: none;
+    user-select: none;
   }
 
   a {
