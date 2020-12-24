@@ -139,13 +139,14 @@ function FirstPage(props) {
 
   return (
     <Container>
-      <Title onMouseOver={() => setHoverTitle(true)} onMouseOut={() => setHoverTitle(false)}>{title()}</Title>
+      <Title>{title()}</Title>
       <IntroText>Slack 에 연동하여 시작해보세요.</IntroText>
       <LoginButton onClick={login}>
         <img alt="Sign in with Slack" height={loginBtnSize.height} width={loginBtnSize.width} 
         src="https://platform.slack-edge.com/img/sign_in_with_slack.png" 
         srcSet="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, 
-        https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" />
+        https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x"
+        onMouseOver={() => setHoverTitle(true)} onMouseOut={() => setHoverTitle(false)} />
       </LoginButton>
     </Container>
   );
