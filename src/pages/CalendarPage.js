@@ -198,19 +198,19 @@ const AnimalImg = styled.img`
 const CardContainer = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  flex-wrap: wrap;
+  overflow-x: scroll;
   min-height: 170px;
-  height:calc(100% - 170px);
   background-color: #faefe0;
+  position: relative;
 `;
 
 const CardBox = styled.div`
   display: flex;
   flex-direction: column;
-  width: 169px;
-  height: 110px;
+  min-width: 169px;
+  min-height: 110px;
   margin: 10px;
   padding-left: 27px;
   border-top-right-radius: 19px;
