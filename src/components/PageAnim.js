@@ -19,15 +19,15 @@ function PageAnim(props) {
   const animProps = useTransition(null, null, {
     enter: {
       opacity: 1,
-      marginTop: "0px"
+      transform: "translate(0px, 0px)"
     },
     from: {
       opacity: 0,
-      marginTop: "30px"
+      transform: "translate(0px, 30px)"
     },
     leave: {
       opacity: 0,
-      marginTop: "30px"
+      transform: "translate(0px, 0px)"
     }
   });
   return (
