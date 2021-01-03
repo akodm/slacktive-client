@@ -40,6 +40,10 @@ const BtnText= styled.div`
   color: #ffffff;
 `;
 
+const TodayDate = styled.span`
+  font-family: NanumBarunGothic;
+`;
+
 const PreviousBtn = styled(ChevronLeftOutlinedIcon)`
   margin-bottom: 3px;
 `;
@@ -50,25 +54,33 @@ const NextBtn = styled(ChevronRightOutlinedIcon)`
 
 const now = moment(new Date());
 
-function Tui(props) {
-  const [ month, setMonth ] = useState(now.format("M"));
+const Tui = () => {
+  const [ month, setMonth ] = useState(now);
+  
   const calendarRef = useRef();
 
   const monthChange = useCallback((type) => {
     const calendar = calendarRef.current?.getInstance();
     if(type) {
-      setMonth(moment(month, "M").add(1, "month").format("M"));
+      setMonth(moment(month, "M").add(1, "month"));
       calendar.next();
     } else {
-      setMonth(moment(month, "M").subtract(1, "month").format("M"));
+      setMonth(moment(month, "M").subtract(1, "month"));
       calendar.prev();
     }
   }, [calendarRef, month]);
 
+  const monthToday = useCallback(() => {
+    const calendar = calendarRef.current?.getInstance();
+    setMonth(now);
+    calendar.today();
+  }, [calendarRef]);
+
   const btns = useMemo(() => [
     { key: "pre", icon: <PreviousBtn />, text: "이전 달", onClick: () => monthChange(false) },
+    { key: "today", icon: <TodayDate />, text: `${month.format("YYYY년 M월")}`, onClick: monthToday },
     { key: "next", icon: <NextBtn />, text: "다음 달", onClick: () => monthChange(true) },
-  ], [monthChange]);
+  ], [monthChange, month, monthToday]);
 
   const create = useCallback(() => {
     console.log("create");

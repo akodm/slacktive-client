@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
@@ -93,7 +93,7 @@ const LoginButton = styled.div`
 function FirstPage(props) {
   const history = useHistory();
   const [ hoverTitle, setHoverTitle ] = useState(false);
-  const [ loginBtnSize, setLoginBtnSize ] = useState({width: '210px', height: '45px'});
+  const [ loginBtnSize, setLoginBtnSize ] = useState({ width: '210px', height: '45px' });
 
   useEffect(() => {
     const time = setInterval(() => {
@@ -105,8 +105,8 @@ function FirstPage(props) {
 
   useEffect(() => {
     const { width } = window.screen;
-    if (width > 375) { setLoginBtnSize({width: '210px', height: '45px'}); }
-    else { setLoginBtnSize({width: '170px', height: '40px'}); }
+    if (width > 375) { setLoginBtnSize({ width: '210px', height: '45px' }); }
+    else { setLoginBtnSize({ width: '170px', height: '40px' }); }
   }, []);
 
   const login = useCallback( async () => {
@@ -118,14 +118,7 @@ function FirstPage(props) {
     }
   }, [history]);
 
-  const random = useCallback(() => {
-    let arr = [4];
-    arr = arr.map(() => {
-
-    });
-  }, []);
-
-  const title = useCallback(() => {
+  const title = useMemo(() => {
     const strArr = ['S', 'l', 'a', 'c', 'k', 't', 'i', 'v', 'e'];
     return strArr.map((elem, idx) => {
       return (
@@ -137,16 +130,21 @@ function FirstPage(props) {
     })
   }, [hoverTitle]);
 
+  const hoverTitleFunction = useCallback(bool => {
+    setHoverTitle(bool);
+  }, []);
+
   return (
     <Container>
-      <Title>{title()}</Title>
+      <Title>{title}</Title>
       <IntroText>Slack 에 연동하여 시작해보세요.</IntroText>
       <LoginButton onClick={login}>
         <img alt="Sign in with Slack" height={loginBtnSize.height} width={loginBtnSize.width} 
-        src="https://platform.slack-edge.com/img/sign_in_with_slack.png" 
-        srcSet="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, 
-        https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x"
-        onMouseOver={() => setHoverTitle(true)} onMouseOut={() => setHoverTitle(false)} />
+          src="https://platform.slack-edge.com/img/sign_in_with_slack.png" 
+          srcSet="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, 
+          https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x"
+          onMouseOver={() => hoverTitleFunction(true)} onMouseOut={() => hoverTitleFunction(false)}
+        />
       </LoginButton>
     </Container>
   );
