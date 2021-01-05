@@ -1,6 +1,9 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
+import axios from 'axios';
+
+import { SERVER_URL } from '../config';
 
 const Container = styled.div`
   display: flex;
@@ -9,66 +12,7 @@ const Container = styled.div`
   align-items: center;
   width: 100%;
   height: 100vh;
-  background: linear-gradient(to right, #a8c0ff, #3f2b96);
   overflow: hidden;
-`;
-
-const Title = styled.div`
-  display: flex;
-  align-items: center;
-  font-size: 5rem;
-  color: white;
-  animation: ani 1.5s infinite alternate;
-  font-family: 'Raleway', sans-serif;
-
-  &::before {
-    content: '☆';
-    height: 100%;
-    font-size: 3rem;
-  }
-
-  @keyframes ani{
-    0%{transform:translate(0,0);}
-    100%{transform:translate(0,50px);}
-  }
-
-  @media (max-width: 375px) {
-    font-size: 2rem;
-
-    &::before {
-      font-size: 1rem;
-    }
-  }
-`;
-
-// Slacktive 에 마우스 over 할 경우 active 를 돋보이도록
-const ActiveTitle = styled.span`
-  transition: 0.6s;
-  text-decoration: ${props => props.hover ? 'underline' : 'none'};
-  color: ${props => props.hover ? '#EF5350' : 'white'};
-  margin: ${props => props.hover ? '0 0px' : '0 20px'};
-
-  @media (max-width: 375px) {
-    margin: ${props => props.hover ? '0 0px' : '0 7px'};
-  }
-`;
-
-// Slacktive 기본 Style sheet
-const OriginTitle = styled.span`
-  margin: 0 20px;
-
-  @media (max-width: 375px) {
-    margin: 0 3px;
-  }
-`;
-
-const IntroText = styled.div`
-  font-size: 2rem;
-  font-family: 'Noto Serif KR', serif;
-
-  @media (max-width: 375px) {
-    font-size: 1rem;
-  }
 `;
 
 const LoginButton = styled.div`
@@ -92,58 +36,45 @@ const LoginButton = styled.div`
 
 function FirstPage(props) {
   const history = useHistory();
-  const [ hoverTitle, setHoverTitle ] = useState(false);
-  const [ loginBtnSize, setLoginBtnSize ] = useState({ width: '210px', height: '45px' });
 
-  useEffect(() => {
-    const time = setInterval(() => {
-
-    }, 1500);
-
-    return () => clearInterval(time);
+  const login = useCallback(() => {
+      window.location.href = SERVER_URL + '/api/login'
   }, []);
 
-  useEffect(() => {
-    const { width } = window.screen;
-    if (width > 375) { setLoginBtnSize({ width: '210px', height: '45px' }); }
-    else { setLoginBtnSize({ width: '170px', height: '40px' }); }
-  }, []);
-
-  const login = useCallback( async () => {
-    console.log("slack login btn click");
+  const access = useCallback( async (code) => {
     try {
-      history.replace("/calendar");
+      console.log(code);
+      const { data } = await axios.get(`${SERVER_URL}/api/access?code=${code}`);
+
+      console.log(data);
+
+      // history.replace("/calendar");
     } catch(err) {
       console.log(err);
+      window.alert("로그인에 실패하였습니다.");
     }
   }, [history]);
 
-  const title = useMemo(() => {
-    const strArr = ['S', 'l', 'a', 'c', 'k', 't', 'i', 'v', 'e'];
-    return strArr.map((elem, idx) => {
-      return (
-        elem === 'a' || elem === 'c' || elem === 't' || elem === 'i' || elem === 'v' || elem === 'e' ?
-        <ActiveTitle key={idx} hover={hoverTitle}>{elem}</ActiveTitle>
-        :
-        <OriginTitle key={idx}>{elem}</OriginTitle>
-      )
-    })
-  }, [hoverTitle]);
+  useEffect(() => {
+    const urls = new URL(window.location);
+    const code = urls.searchParams.get("code");
+    const error = urls.searchParams.get("error");
 
-  const hoverTitleFunction = useCallback(bool => {
-    setHoverTitle(bool);
-  }, []);
+    if(code) {
+      access(code);
+    }
+    if(error) {
+      window.alert("로그인에 실패하였습니다.");
+    }
+  }, [access]);
 
   return (
     <Container>
-      <Title>{title}</Title>
-      <IntroText>Slack 에 연동하여 시작해보세요.</IntroText>
       <LoginButton onClick={login}>
-        <img alt="Sign in with Slack" height={loginBtnSize.height} width={loginBtnSize.width} 
+        <img alt="Sign in with Slack" height={"45px"} width={"210px"} 
           src="https://platform.slack-edge.com/img/sign_in_with_slack.png" 
           srcSet="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, 
           https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x"
-          onMouseOver={() => hoverTitleFunction(true)} onMouseOut={() => hoverTitleFunction(false)}
         />
       </LoginButton>
     </Container>
