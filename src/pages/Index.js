@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
+import { LOCALSTORAGE } from '../config';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
 import MyPage from './MyPage';
 import GroupPage from './GroupPage';
 import EtcPage from './EtcPage';
+import UnAuthPage from './UnAuthPage';
 
 import Menu from '../components/Menu';
 
@@ -46,15 +48,23 @@ function Index(props) {
 
   const firstPage = useMemo(() => location?.pathname === "/" ? true : false, [location?.pathname]);
 
+  const tokenHas = useMemo(() => window.localStorage.getItem(LOCALSTORAGE) && location.pathname !== "/", [location.pathname]);
+
   return (
     <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
       <Switch>
         <Route exact path="/"><FirstPage /></Route>
-        <Route path="/calendar"><CalendarPage /></Route>
-        <Route path="/my"><MyPage /></Route>
-        <Route path="/group"><GroupPage /></Route>
-        <Route path="/etc"><EtcPage /></Route>
+        {
+          tokenHas ? <>
+            <Route path="/calendar"><CalendarPage /></Route>
+            <Route path="/my"><MyPage /></Route>
+            <Route path="/group"><GroupPage /></Route>
+            <Route path="/etc"><EtcPage /></Route>
+          </>
+          :
+          <Route path="/"><UnAuthPage /></Route>
+        }
       </Switch>
     </Container>
   );
