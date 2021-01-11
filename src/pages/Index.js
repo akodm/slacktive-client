@@ -9,6 +9,7 @@ import MyPage from './MyPage';
 import GroupPage from './GroupPage';
 import EtcPage from './EtcPage';
 import UnAuthPage from './UnAuthPage';
+import Develop from './Develop';
 
 import Menu from '../components/Menu';
 
@@ -61,6 +62,7 @@ function Index(props) {
             <Route path="/my"><MyPage /></Route>
             <Route path="/group"><GroupPage /></Route>
             <Route path="/etc"><EtcPage /></Route>
+            <Route path="/develop/display"><Develop /></Route>
           </>
           :
           <Route path="/"><UnAuthPage /></Route>
