@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 
-import { SERVER_URL } from '../config';
+import { SERVER_URL, LOCALSTORAGE } from '../config';
 
 const Container = styled.div`
   display: flex;
@@ -49,8 +49,11 @@ function FirstPage(props) {
         throw new Error(data.message);
       }
 
-      // history.replace("/calendar");
+      window.localStorage.setItem(LOCALSTORAGE, JSON.stringify(data));
+
+      history.replace("/calendar");
     } catch(err) {
+      window.localStorage.removeItem(LOCALSTORAGE);
       window.alert("로그인에 실패하였습니다: " + err.message || err);
     }
   }, []);
