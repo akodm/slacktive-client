@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { AnimatedWrapper } from '../components/PageAnim';
 import axios from 'axios';
 
@@ -32,6 +32,12 @@ const SelectCards = styled.div`
   opacity: 0.7;
   background-color: ${props => props.colors || "red"};
   cursor: pointer;
+  transition-property: transform;
+  transition: ease 0.3s 0s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 const SelectText = styled.span`
@@ -62,6 +68,18 @@ const ModalOverray = styled.div`
   z-index: 1001;
 `;
 
+const animModal = keyframes`
+  from {
+    margin-top: 100px;
+    opacity: 0;
+  }
+
+  to {
+    margin-top: 0px;
+    opacity: 1;
+  }
+`;
+
 const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
@@ -73,6 +91,9 @@ const ModalContent = styled.div`
   position: absolute;
   overflow: auto;
   z-index: 1002;
+
+  animation-name: ${animModal};
+  animation-duration: 0.5s;
 `;
 
 const ModalText = styled.span`
@@ -144,7 +165,7 @@ function Develop(props) {
   const cards = useMemo(() => [
     { id: "times", title: "현재까지 모든 출퇴근 기록", onClick: () => onClickModalContent("times"), colors: "red", fontColor: "white" },
     { id: "holidays", title: "현재까지 모든 휴가 기록", onClick: () => onClickModalContent("holidays"), colors: "blue", fontColor: "white" },
-    { id: "avgTimes", title: "현재까지 모든 출퇴근 평균 기록", onClick: () => onClickModalContent("avgTimes"), colors: "yellow", fontColor: "black" },
+    { id: "avgTimes", title: "현재까지 모든 출퇴근 평균 기록 (사용 불가)", onClick: () => onClickModalContent("avgTimes"), colors: "yellow", fontColor: "black" },
     { id: "overs", title: "현재까지 모든 야근 기록", onClick: () => onClickModalContent("overs"), colors: "green", fontColor: "white" },
     { id: "tardys", title: "현재까지 모든 지각 기록", onClick: () => onClickModalContent("tardys"), colors: "purple", fontColor: "white" },
   ], [onClickModalContent]);
@@ -182,7 +203,7 @@ const DummyModal = (props) => {
         <table>
           <tbody>
             {
-              category.map((data, idx) => {
+              category[0] ? category.map((data, idx) => {
                 return <ModalTr key={idx}>
                   <td><ModalText>{data.id}</ModalText></td>
                   <td><ModalText>{data.text}</ModalText></td>
@@ -193,6 +214,12 @@ const DummyModal = (props) => {
                   { data.over ? <td><ModalText>{`${data.over}시간 야근`}</ModalText></td> : <td></td> }
                 </ModalTr>
               })
+              :
+              <tr>
+                <td>
+                  <ModalText>해당 기록이 없습니다.</ModalText>
+                </td>
+              </tr>
             }
           </tbody>
         </table>
