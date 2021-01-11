@@ -43,17 +43,17 @@ function FirstPage(props) {
 
   const access = useCallback( async (code) => {
     try {
-      console.log(code);
       const { data } = await axios.get(`${SERVER_URL}/api/access?code=${code}`);
 
-      console.log(data);
+      if(data.err) {
+        throw new Error(data.message);
+      }
 
       // history.replace("/calendar");
     } catch(err) {
-      console.log(err);
-      window.alert("로그인에 실패하였습니다.");
+      window.alert("로그인에 실패하였습니다: " + err.message || err);
     }
-  }, [history]);
+  }, []);
 
   useEffect(() => {
     const urls = new URL(window.location);
