@@ -56,7 +56,7 @@ function FirstPage(props) {
       window.localStorage.removeItem(LOCALSTORAGE);
       window.alert("로그인에 실패하였습니다: " + err.message || err);
     }
-  }, []);
+  }, [history]);
 
   useEffect(() => {
     const urls = new URL(window.location);

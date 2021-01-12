@@ -94,6 +94,11 @@ const ModalContent = styled.div`
 
   animation-name: ${animModal};
   animation-duration: 0.5s;
+
+  @media (max-width: 600px) {
+    width: 95%;
+    height: 95%;
+  }
 `;
 
 const ModalText = styled.span`
@@ -197,8 +202,8 @@ const DummyModal = (props) => {
     close && close(false);
   }, [close]);
 
-  return <ModalContainer>
-    <ModalOverray onClick={modalClose} />
+  return <ModalContainer onClick={modalClose}>
+    <ModalOverray />
       <ModalContent>
         <table>
           <tbody>
