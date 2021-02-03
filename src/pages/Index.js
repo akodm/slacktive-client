@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useCallback, useState } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import { LOCALSTORAGE } from '../config';
+import { LOCALSTORAGE, SERVER_URL } from '../config';
+import axios from 'axios';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
@@ -32,6 +33,7 @@ const etc = `#2b5876, #4e4376`;
 
 function Index(props) {
   const location = useLocation();
+  const [ hasToken, setHasToken ] = useState(false); 
 
   const backgroundColorChange = useMemo(() => {
     if(location?.pathname === "/my") {
@@ -49,7 +51,38 @@ function Index(props) {
 
   const firstPage = useMemo(() => location?.pathname === "/" ? true : false, [location?.pathname]);
 
-  const tokenHas = useMemo(() => window.localStorage.getItem(LOCALSTORAGE) && location.pathname !== "/", [location.pathname]);
+  const tokenCheck = useCallback( async () => {
+    try {
+      if(location?.pathname !== "/" || !window.localStorage.getItem(LOCALSTORAGE)) {
+        return false;
+      }
+      
+      const localToken = window.localStorage.getItem(LOCALSTORAGE);
+
+      const token = JSON.parse(localToken);
+
+      const { data } = await axios.get(`${SERVER_URL}/users/token/check`, {
+        headers: {
+          "authorization": token.token
+        }
+      });
+
+      if(!data || !data.result) {
+        throw new Error("unauth user");
+      }
+
+      setHasToken(true);
+      return;
+    } catch(err) {
+      setHasToken(false);
+      window.alert(err.mesaage || err);
+      return;
+    }
+  }, [location]);
+
+  useEffect(() => {
+    tokenCheck();
+  }, [tokenCheck]);
 
   return (
     <Container first={firstPage} back={backgroundColorChange}>
@@ -57,7 +90,7 @@ function Index(props) {
       <Switch>
         <Route exact path="/"><FirstPage /></Route>
         {
-          tokenHas ? <>
+          hasToken ? <>
             <Route path="/calendar"><CalendarPage /></Route>
             <Route path="/my"><MyPage /></Route>
             <Route path="/group"><GroupPage /></Route>
