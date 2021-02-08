@@ -13,6 +13,7 @@ import UnAuthPage from './UnAuthPage';
 import Develop from './Develop';
 
 import Menu from '../components/Menu';
+// import Alert from '../components/Alert';
 
 const Container = styled.div`
   width: 100%;
@@ -53,10 +54,11 @@ function Index(props) {
 
   const tokenCheck = useCallback( async () => {
     try {
-      if(location?.pathname !== "/" || !window.localStorage.getItem(LOCALSTORAGE)) {
+      if(!window.localStorage.getItem(LOCALSTORAGE)) {
+        setHasToken(false);
         return false;
       }
-      
+
       const localToken = window.localStorage.getItem(LOCALSTORAGE);
 
       const token = JSON.parse(localToken);
@@ -67,18 +69,39 @@ function Index(props) {
         }
       });
 
+      if(data && data.message === "expire all") {
+        setHasToken(false);
+        window.localStorage.removeItem(LOCALSTORAGE);
+        window.alert("로그인이 만료되었습니다. 다시 로그인하여 주세요.");
+        return window.location.href = "/#/";
+      }
+
+      if(data && data.err) {
+        throw new Error(data.message);
+      }
+
       if(!data || !data.result) {
         throw new Error("unauth user");
+      }
+
+      if(data.token) {
+        const newToken = {
+          result: true,
+          token: data.token
+        };
+
+        window.localStorage.setItem(LOCALSTORAGE, JSON.stringify(newToken));
       }
 
       setHasToken(true);
       return;
     } catch(err) {
+      window.localStorage.removeItem(LOCALSTORAGE);
       setHasToken(false);
       window.alert(err.mesaage || err);
       return;
     }
-  }, [location]);
+  }, []);
 
   useEffect(() => {
     tokenCheck();
@@ -88,7 +111,7 @@ function Index(props) {
     <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
       <Switch>
-        <Route exact path="/"><FirstPage /></Route>
+        <Route exact path="/"><FirstPage setHasToken={setHasToken} /></Route>
         {
           hasToken ? <>
             <Route path="/calendar"><CalendarPage /></Route>

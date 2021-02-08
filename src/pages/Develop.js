@@ -212,7 +212,7 @@ const DummyModal = (props) => {
                 return <ModalTr key={idx}>
                   <td><ModalText>{data.id}</ModalText></td>
                   <td><ModalText>{data.text}</ModalText></td>
-                  <td><ModalText>{data.user.name}</ModalText></td>
+                  <td><ModalText>{data.user?.name}</ModalText></td>
                   <td><ModalText>{data.slackTime || `${data.start} ~ ${data.end}`}</ModalText></td>
                   { data.category ? <td><ModalText>{data.category}</ModalText></td> : <td></td> }
                   { data.count ? <td><ModalText>{`${data.count}개 사용`}</ModalText></td> : <td></td> }

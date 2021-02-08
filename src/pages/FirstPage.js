@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 
 import { SERVER_URL, LOCALSTORAGE } from '../config';
@@ -35,7 +34,7 @@ const LoginButton = styled.div`
 `;
 
 function FirstPage(props) {
-  const history = useHistory();
+  const { setHasToken } = props;
 
   const login = useCallback(() => {
       window.location.href = SERVER_URL + '/api/login'
@@ -51,12 +50,14 @@ function FirstPage(props) {
 
       window.localStorage.setItem(LOCALSTORAGE, JSON.stringify(data));
 
-      history.replace("/calendar");
+      setHasToken(true);
+
+      window.location.href = "/#/calendar";
     } catch(err) {
       window.localStorage.removeItem(LOCALSTORAGE);
       window.alert("로그인에 실패하였습니다: " + err.message || err);
     }
-  }, [history]);
+  }, [setHasToken]);
 
   useEffect(() => {
     const urls = new URL(window.location);

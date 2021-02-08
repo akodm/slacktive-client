@@ -1,7 +1,11 @@
 import { combineReducers } from 'redux';
 
-import { slackLoginReducer } from './login';
+import { 
+  slackLoginReducer,
+  modalOpenCloseReducer,
+ } from './login';
 
 export const reducer = combineReducers({
-  slackLoginReducer
+  slackLoginReducer,
+  modalOpenCloseReducer
 });
