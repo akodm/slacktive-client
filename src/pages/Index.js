@@ -3,6 +3,7 @@ import { Route, Switch, useLocation } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import { LOCALSTORAGE, SERVER_URL } from '../config';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
@@ -13,7 +14,7 @@ import UnAuthPage from './UnAuthPage';
 import Develop from './Develop';
 
 import Menu from '../components/Menu';
-// import Alert from '../components/Alert';
+import Alert from '../components/Alert';
 
 const Container = styled.div`
   width: 100%;
@@ -34,6 +35,7 @@ const etc = `#2b5876, #4e4376`;
 
 function Index(props) {
   const location = useLocation();
+  const { modal } = useSelector(state => state.modalOpenCloseReducer);
   const [ hasToken, setHasToken ] = useState(false); 
 
   const backgroundColorChange = useMemo(() => {
@@ -106,10 +108,11 @@ function Index(props) {
   useEffect(() => {
     tokenCheck();
   }, [tokenCheck]);
-
+  
   return (
     <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
+      { modal && <Alert /> }
       <Switch>
         <Route exact path="/"><FirstPage setHasToken={setHasToken} /></Route>
         {

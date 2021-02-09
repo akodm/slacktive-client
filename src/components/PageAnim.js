@@ -8,7 +8,7 @@ const AnimatedWrapperDiv = animated(styled.div`
   margin-left: 90px;
   margin-bottom: 0px;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     margin-left: 0px;
     margin-bottom: 40px;
   }

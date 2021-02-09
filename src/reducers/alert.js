@@ -1,7 +1,8 @@
-import { CLOSE_ALERT, OPEN_ALERT } from '../actions/alert';
+import { CLOSE_ALERT, OPEN_ALERT, AELRT_CONTENTS_CHANGE } from '../actions/alert';
 
 const initState = {
   modal: false,
+  contents: "",
 };
 
 export const modalOpenCloseReducer = (state = initState, action) => {
@@ -9,12 +10,20 @@ export const modalOpenCloseReducer = (state = initState, action) => {
     case OPEN_ALERT:
       return {
         ...state,
-        modal: true
+        modal: true,
+        contents: action.payload
       }
     case CLOSE_ALERT:
       return {
         ...state,
-        modal: false
+        modal: false,
+        contents: ""
+      }
+    case AELRT_CONTENTS_CHANGE:
+      return {
+        ...state,
+        modal: action.payload.modal,
+        contents: action.payload.contents
       }
     default:
       return state;

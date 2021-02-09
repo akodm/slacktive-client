@@ -13,7 +13,7 @@ const Container = styled.div`
   left: 0px;
   position: fixed;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     width: 100vw;
     height: 40px;
     left: 0px;
@@ -27,7 +27,7 @@ const Container = styled.div`
 const ButtonWrapper = styled.div`
   padding-top: 71px;
   
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -48,7 +48,7 @@ const Button = styled.div`
     transform: scale(1.4);
   }
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     width: 25%;
     height: 40px;
   }
@@ -63,32 +63,32 @@ const SideBorder = styled.div`
   transition: transform ease 0.3s 0s;
   position: absolute;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     display: none;
   }
 `;
 
 const CalendarIcon = styled(DateRangeOutlinedIcon)`
   color: white;
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     color: ${props => props.index === 0 ? "#6c84ff" : "#777777"};
   }
 `;
 const ProfileIcon = styled(AccountCircleOutlinedIcon)`
   color: white;
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     color: ${props => props.index === 1 ? "#6c84ff" : "#777777"};
   }
 `;
 const CompanyIcon = styled(BusinessOutlinedIcon)`
   color: white;
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     color: ${props => props.index === 2 ? "#6c84ff" : "#777777"};
   }
 `;
 const EtcIcon = styled(ListOutlinedIcon)`
   color: white;
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     color: ${props => props.index === 3 ? "#6c84ff" : "#777777"};
   }
 `;

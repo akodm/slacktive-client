@@ -4,6 +4,8 @@ import ChevronRightOutlinedIcon from '@material-ui/icons/ChevronRightOutlined';
 import { TuiCalendar } from '../components/Tui';
 import { AnimatedWrapper } from '../components/PageAnim';
 import moment from 'moment';
+import { useDispatch } from 'react-redux';
+import { openAlert } from '../actions/alert';
 
 const Container = styled.div`
   display: flex;
@@ -16,7 +18,7 @@ const TopWrapper = styled.div`
   flex-direction: column;
   padding: 32px;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     padding: 16px;
   }
 `;
@@ -46,7 +48,7 @@ const TopLayout = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     flex-direction: column-reverse;
     align-items: flex-start;
   }
@@ -61,6 +63,14 @@ const TopText = styled.span`
   color: #ffffff;
   white-space: pre-line;
   word-break: keep-all;
+  cursor: pointer;
+  transition-property: color, transform;
+  transition: ease 0.5s 0s;
+
+  &:hover {
+    color: #80D8FF;
+    transform: scale(1.1);
+  }
 `;
 
 const TopIcon = styled.img`
@@ -68,7 +78,7 @@ const TopIcon = styled.img`
   height: 85px;
   object-fit: cover;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     margin-bottom: 20px;
   }
 `;
@@ -82,7 +92,7 @@ const TopTodayLane = styled.div`
   background-color: rgba(0, 0, 0, 0.17);
   margin-top: 30px;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     margin-top: 16px;
   }
 `;
@@ -113,7 +123,7 @@ const TodayText = styled.span`
     margin: 8px;
   }
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     font-size: 18px;
     margin: 8px;
   }
@@ -136,7 +146,7 @@ const TodayUserText = styled.span`
     margin: 1px;
   }
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     display: flex;
     align-items: center;
     font-size: 18px;
@@ -200,6 +210,7 @@ const CardContainer = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  flex: 1;
   overflow-x: scroll;
   min-height: 170px;
   background-color: #faefe0;
@@ -307,7 +318,9 @@ const cardDummy = [
 // ];
 
 function CalendarPage(props) {
+  const dispatch = useDispatch();
   const [ windowSize, setWindowSize ] = useState(window.innerWidth);
+  const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
 
   const browserHandler = useCallback((e) => {
     setWindowSize(window.innerWidth);
@@ -386,7 +399,7 @@ function CalendarPage(props) {
         <Cloud3 src="/img/calendar/cloud3.png" alt="cloud"/>
         <TopWrapper>
           <TopLayout>
-            <TopText>{dummyName}{topText}</TopText>
+            <TopText onClick={() => openAlertAction("안녕하세요.")} >{dummyName}{topText}</TopText>
             <TopIcon src="/img/calendar/main.png" alt="icon"/>
           </TopLayout>
           <TopTodayLane>
