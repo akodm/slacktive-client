@@ -18,7 +18,7 @@ const TopWrapper = styled.div`
   flex-direction: column;
   padding: 32px;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     padding: 16px;
   }
 `;
@@ -48,7 +48,7 @@ const TopLayout = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     flex-direction: column-reverse;
     align-items: flex-start;
   }
@@ -78,7 +78,7 @@ const TopIcon = styled.img`
   height: 85px;
   object-fit: cover;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     margin-bottom: 20px;
   }
 `;
@@ -92,7 +92,7 @@ const TopTodayLane = styled.div`
   background-color: rgba(0, 0, 0, 0.17);
   margin-top: 30px;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     margin-top: 16px;
   }
 `;
@@ -123,7 +123,7 @@ const TodayText = styled.span`
     margin: 8px;
   }
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     font-size: 18px;
     margin: 8px;
   }
@@ -146,7 +146,7 @@ const TodayUserText = styled.span`
     margin: 1px;
   }
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     display: flex;
     align-items: center;
     font-size: 18px;
@@ -210,6 +210,7 @@ const CardContainer = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  flex: 1;
   overflow-x: scroll;
   min-height: 170px;
   background-color: #faefe0;

@@ -17,7 +17,7 @@ const TopWrapper = styled.div`
   flex-direction: column;
   padding: 32px;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     padding: 16px;
   }
 `;
@@ -36,7 +36,7 @@ const HolidayCard = styled.div`
   padding: 30px;
   background-color: #ffffff;
 
-  @media (max-width: 375px) {
+  @media (max-width: 500px) {
     padding: 20px;
   }
 `;
