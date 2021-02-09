@@ -4,6 +4,8 @@ import ChevronRightOutlinedIcon from '@material-ui/icons/ChevronRightOutlined';
 import { TuiCalendar } from '../components/Tui';
 import { AnimatedWrapper } from '../components/PageAnim';
 import moment from 'moment';
+import { useDispatch } from 'react-redux';
+import { openAlert } from '../actions/alert';
 
 const Container = styled.div`
   display: flex;
@@ -61,6 +63,14 @@ const TopText = styled.span`
   color: #ffffff;
   white-space: pre-line;
   word-break: keep-all;
+  cursor: pointer;
+  transition-property: color, transform;
+  transition: ease 0.5s 0s;
+
+  &:hover {
+    color: #80D8FF;
+    transform: scale(1.1);
+  }
 `;
 
 const TopIcon = styled.img`
@@ -307,7 +317,9 @@ const cardDummy = [
 // ];
 
 function CalendarPage(props) {
+  const dispatch = useDispatch();
   const [ windowSize, setWindowSize ] = useState(window.innerWidth);
+  const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
 
   const browserHandler = useCallback((e) => {
     setWindowSize(window.innerWidth);
@@ -386,7 +398,7 @@ function CalendarPage(props) {
         <Cloud3 src="/img/calendar/cloud3.png" alt="cloud"/>
         <TopWrapper>
           <TopLayout>
-            <TopText>{dummyName}{topText}</TopText>
+            <TopText onClick={() => openAlertAction("안녕하세요.")} >{dummyName}{topText}</TopText>
             <TopIcon src="/img/calendar/main.png" alt="icon"/>
           </TopLayout>
           <TopTodayLane>
