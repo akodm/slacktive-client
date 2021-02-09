@@ -1,5 +1,2 @@
 # Cedar Slacktive Repo
-
-Test
-
-- Jun & Yul & Min
+> release update. 0.1.2  
