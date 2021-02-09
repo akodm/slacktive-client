@@ -112,7 +112,7 @@ const ModalTr = styled.tr`
   border-bottom: 1px solid gray;
 `;
 
-function Develop(props) {
+const Develop = () => {
   const [ times, setTimes ] = useState([]);         // 모든 출퇴근 내역.
   const [ holidays, setHolidays ] = useState([]);   // 모든 휴가 내역.
   const [ avgTimes, setAvgTimes ] = useState([]);   // 모든 사용자들의 평균 출퇴근 내역.
@@ -202,6 +202,20 @@ const DummyModal = (props) => {
     close && close(false);
   }, [close]);
 
+  const overParse = useCallback((time) => {
+    const [ hour, minute ] = time.toString().split('.');
+
+    let parseMinute = 0;
+
+    if(minute) {
+      parseMinute = ((60 * parseInt(minute)) / 100).toFixed(0);
+    }
+    
+    const parseTime = `${parseInt(hour) > 0 ? `${hour}시간` : ""} ${parseMinute}분`;
+
+    return parseTime;
+  }, []);
+
   return <ModalContainer onClick={modalClose}>
     <ModalOverray />
       <ModalContent>
@@ -212,11 +226,11 @@ const DummyModal = (props) => {
                 return <ModalTr key={idx}>
                   <td><ModalText>{data.id}</ModalText></td>
                   <td><ModalText>{data.text}</ModalText></td>
-                  <td><ModalText>{data.user.name}</ModalText></td>
+                  <td><ModalText>{data.user?.name}</ModalText></td>
                   <td><ModalText>{data.slackTime || `${data.start} ~ ${data.end}`}</ModalText></td>
                   { data.category ? <td><ModalText>{data.category}</ModalText></td> : <td></td> }
                   { data.count ? <td><ModalText>{`${data.count}개 사용`}</ModalText></td> : <td></td> }
-                  { data.over ? <td><ModalText>{`${data.over}시간 야근`}</ModalText></td> : <td></td> }
+                  { data.over ? <td><ModalText>{`${overParse(data.over)} 야근`}</ModalText></td> : <td></td> }
                 </ModalTr>
               })
               :
