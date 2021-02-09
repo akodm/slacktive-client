@@ -204,7 +204,13 @@ const DummyModal = (props) => {
 
   const overParse = useCallback((time) => {
     const [ hour, minute ] = time.toString().split('.');
-    const parseMinute = ((60 * parseInt(minute)) / 100).toFixed(0);
+
+    let parseMinute = 0;
+
+    if(minute) {
+      parseMinute = ((60 * parseInt(minute)) / 100).toFixed(0);
+    }
+    
     const parseTime = `${parseInt(hour) > 0 ? `${hour}시간` : ""} ${parseMinute}분`;
 
     return parseTime;
