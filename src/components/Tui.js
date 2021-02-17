@@ -5,6 +5,9 @@ import ChevronRightOutlinedIcon from '@material-ui/icons/ChevronRightOutlined';
 import Calendar from '@toast-ui/react-calendar';
 import 'tui-calendar/dist/tui-calendar.css';
 import moment from 'moment';
+import { useDispatch } from 'react-redux';
+import { openModal } from '../actions/modal';
+import CalendarModal from '../components/Calendar';
 
 const Container = styled.div`
   height: 80vmin;
@@ -53,12 +56,16 @@ const NextBtn = styled(ChevronRightOutlinedIcon)`
 `
 
 const now = moment(new Date());
+const monthView = ['일', '월', '화', '수', '목', '금', '토'];
+const calendarModalOptions = { width: 570, height: 944, backdrop: true };
 
 const Tui = () => {
+  const dispatch = useDispatch();
   const [ month, setMonth ] = useState(now);
-  
   const calendarRef = useRef();
+  const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
 
+  // 월 변경.
   const monthChange = useCallback((type) => {
     const calendar = calendarRef.current?.getInstance();
     if(type) {
@@ -70,29 +77,52 @@ const Tui = () => {
     }
   }, [calendarRef, month]);
 
+  // 현재 월로 이동.
   const monthToday = useCallback(() => {
     const calendar = calendarRef.current?.getInstance();
     setMonth(now);
     calendar.today();
   }, [calendarRef]);
 
+  // 월 변경 버튼들.
   const btns = useMemo(() => [
     { key: "pre", icon: <PreviousBtn />, text: "이전 달", onClick: () => monthChange(false) },
     { key: "today", icon: <TodayDate />, text: `${month.format("YYYY년 M월")}`, onClick: monthToday },
     { key: "next", icon: <NextBtn />, text: "다음 달", onClick: () => monthChange(true) },
   ], [monthChange, month, monthToday]);
 
-  const create = useCallback(() => {
-    console.log("create");
+  // 일정 생성.
+  const createSchedule = useCallback(({ start, end, isAllDay }) => {
+    const startDate = moment(start._date).format("YYYY-MM-DD ddd HH:mm:ss");
+    const endDate = moment(end._date).format("YYYY-MM-DD ddd HH:mm:ss");
+    openModalAction({ 
+      contents: <CalendarModal value={{ 
+        start: startDate, 
+        end: endDate, 
+        isAllDay 
+      }} />, 
+      ...calendarModalOptions 
+    });
+  }, [openModalAction]);
+
+  // 일정 수정.
+  const updateSchedule = useCallback(() => {
+    console.log("update Schedule");
+
+    // 일정 클릭 -> 모달 오픈 및 모달내에서 수정 -> 확인 및 업데이트 완료 시 호출.
   }, []);
 
-  const update = useCallback(() => {
-    console.log("update");
-  }, []);
+  // 일정 삭제.
+  // const deleteSchedule = useCallback(() => {
+  //   console.log("delete Schedule");
+    // 일정 클릭 -> 모달 오픈 및 수정/삭제 중 -> 삭제 클릭 시 호출.
+  // }, []);
 
-  const click = useCallback(() => {
-    console.log("click");
-  }, []);
+  // 일정 클릭.
+  const clickSchedule = useCallback((e) => {
+    console.log(e);
+    openModalAction({ contents: <CalendarModal />, ...calendarModalOptions });
+  }, [openModalAction]);
 
   return (
     <>
@@ -125,13 +155,13 @@ const Tui = () => {
           useCreationPopup={false}
           view={"month"}
           month={{
-            daynames: ['일', '월', '화', '수', '목', '금', '토'],
+            daynames: monthView,
             narrowWeekend : true,
             isAlways6Week : true
           }}
-          onBeforeCreateSchedule={create}
-          onBeforeUpdateSchedule={update}
-          onClickSchedule={click}
+          onBeforeCreateSchedule={createSchedule}
+          onBeforeUpdateSchedule={updateSchedule}
+          onClickSchedule={clickSchedule}
         />
       </Container>
     </>

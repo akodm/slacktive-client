@@ -15,16 +15,18 @@ import Develop from './Develop';
 
 import Menu from '../components/Menu';
 import Alert from '../components/Alert';
+import Modal from '../components/Modal';
 
 const Container = styled.div`
-  width: 100%;
+  display: flex;
+  width: 100vw;
   min-height: 100vh;
   ${props => !props.first &&
     css`
       background-image: linear-gradient(to top, ${props => props.back || `#94d0f2, #7ea4ef`});
     `
   }
-  overflow: hidden;
+  overflow: auto;
   position: relative;
 `;
 
@@ -35,8 +37,10 @@ const etc = `#2b5876, #4e4376`;
 
 function Index(props) {
   const location = useLocation();
+  const { alert } = useSelector(state => state.alertOpenCloseReducer);
   const { modal } = useSelector(state => state.modalOpenCloseReducer);
   const [ hasToken, setHasToken ] = useState(false); 
+  const [ load, setLoad ] = useState(false);
 
   const backgroundColorChange = useMemo(() => {
     if(location?.pathname === "/my") {
@@ -58,6 +62,7 @@ function Index(props) {
     try {
       if(!window.localStorage.getItem(LOCALSTORAGE)) {
         setHasToken(false);
+        setLoad(true);
         return false;
       }
 
@@ -96,11 +101,13 @@ function Index(props) {
       }
 
       setHasToken(true);
+      setLoad(true);
       return;
     } catch(err) {
       window.localStorage.removeItem(LOCALSTORAGE);
       setHasToken(false);
       window.alert(err.mesaage || err);
+      setLoad(true);
       return;
     }
   }, []);
@@ -112,7 +119,8 @@ function Index(props) {
   return (
     <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
-      { modal && <Alert /> }
+      { alert && <Alert /> }
+      { modal && <Modal /> }
       <Switch>
         <Route exact path="/"><FirstPage setHasToken={setHasToken} /></Route>
         {
@@ -124,7 +132,10 @@ function Index(props) {
             <Route path="/develop/display"><Develop /></Route>
           </>
           :
+          load ? 
           <Route path="/"><UnAuthPage /></Route>
+          :
+          <Route path="/"><div></div></Route>
         }
       </Switch>
     </Container>

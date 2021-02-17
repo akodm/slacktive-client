@@ -1,28 +1,28 @@
 import { CLOSE_ALERT, OPEN_ALERT, AELRT_CONTENTS_CHANGE } from '../actions/alert';
 
 const initState = {
-  modal: false,
+  alert: false,
   contents: "",
 };
 
-export const modalOpenCloseReducer = (state = initState, action) => {
+export const alertOpenCloseReducer = (state = initState, action) => {
   switch(action.type) {
     case OPEN_ALERT:
       return {
         ...state,
-        modal: true,
+        alert: true,
         contents: action.payload
       }
     case CLOSE_ALERT:
       return {
         ...state,
-        modal: false,
+        alert: false,
         contents: ""
       }
     case AELRT_CONTENTS_CHANGE:
       return {
         ...state,
-        modal: action.payload.modal,
+        alert: action.payload.alert,
         contents: action.payload.contents
       }
     default:
