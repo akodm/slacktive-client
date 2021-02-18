@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@date-io/date-fns": "^2.10.6",
+    "@date-io/date-fns": "1.x",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
@@ -13,7 +13,7 @@
     "@testing-library/user-event": "^12.1.10",
     "@toast-ui/react-calendar": "^1.0.5",
     "axios": "^0.21.0",
-    "date-fns": "^2.16.1",
+    "date-fns": "^2.17.0",
     "moment": "^2.29.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useCallback, useState } from 'react';
-import { Route, Switch, useLocation } from 'react-router-dom';
+import { Route, Switch, useLocation, Redirect } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import { LOCALSTORAGE, SERVER_URL } from '../config';
 import axios from 'axios';
@@ -130,12 +130,11 @@ function Index(props) {
             <Route path="/group"><GroupPage /></Route>
             <Route path="/etc"><EtcPage /></Route>
             <Route path="/develop/display"><Develop /></Route>
+            <Route path="/unauth"><UnAuthPage /></Route>
           </>
           :
-          load ? 
-          <Route path="/"><UnAuthPage /></Route>
-          :
-          <Route path="/"><div></div></Route>
+          load &&
+          <Redirect to="/unauth" />
         }
       </Switch>
     </Container>
