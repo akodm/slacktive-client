@@ -35,7 +35,11 @@ export const modalOpenCloseReducer = (state = initState, action) => {
       return {
         ...state,
         modal: action.payload.modal,
-        contents: action.payload.contents
+        contents: action.payload.contents,
+        width: action.payload.width,
+        height: action.payload.height,
+        close: action.payload.close,
+        backdrop: action.payload.backdrop,
       }
     default:
       return state;

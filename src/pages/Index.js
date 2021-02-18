@@ -123,6 +123,7 @@ function Index(props) {
       { modal && <Modal /> }
       <Switch>
         <Route exact path="/"><FirstPage setHasToken={setHasToken} /></Route>
+        <Route path="/unauth"><UnAuthPage /></Route>
         {
           hasToken ? <>
             <Route path="/calendar"><CalendarPage /></Route>
@@ -130,7 +131,6 @@ function Index(props) {
             <Route path="/group"><GroupPage /></Route>
             <Route path="/etc"><EtcPage /></Route>
             <Route path="/develop/display"><Develop /></Route>
-            <Route path="/unauth"><UnAuthPage /></Route>
           </>
           :
           load &&

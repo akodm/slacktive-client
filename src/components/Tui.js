@@ -8,8 +8,12 @@ import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 import { openModal } from '../actions/modal';
 import CalendarModal from '../components/Calendar';
-import { calendarInit } from '../actions/calendar';
+import ConfirmModal from '../components/Confirm';
+import { openAlert } from '../actions/alert';
+import { calendarInit, calendarDelete, calendarAdd } from '../actions/calendar';
+import { closeModal } from '../actions/modal';
 import { requestAxios } from '../util/request';
+import { LOCALSTORAGE, HOLIDAY_CHANNEL } from '../config';
 
 const Container = styled.div`
   height: 80vmin;
@@ -60,25 +64,49 @@ const NextBtn = styled(ChevronRightOutlinedIcon)`
 const now = moment(new Date());
 const monthView = ['일', '월', '화', '수', '목', '금', '토'];
 const calendarModalOptions = { width: 570, height: 944, backdrop: true };
+const category = [
+  { select: "1", text: "출장/미팅", colors: "#d6ff98" },
+  { select: "2", text: "휴가", colors: "#FFEB3B" },
+  { select: "3", text: "회의", colors: "#87dffa" },
+  { select: "4", text: "생일", colors: "#b0c0ff" },
+  { select: "5", text: "기타", colors: "#ff98c3" },
+];
 
 const Tui = () => {
   const dispatch = useDispatch();
   const [ month, setMonth ] = useState(now);
   const calendarRef = useRef();
+  const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
+  const closeModalAction = useCallback(() => dispatch(closeModal()), [dispatch]);
   const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
   const calendarInitAction = useCallback((payload) => dispatch(calendarInit(payload)), [dispatch]);
+  const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
+  const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
   const { schedules } = useSelector(state => state.calendarEventReducer);
 
+  // 캘린더 일정 색상 파싱.
+  const bgColorParser = useCallback((value) => {
+    return category.reduce((first, data) => {
+      if(data.text === value.category) {
+        return data.colors;
+      }
+
+      return first;
+    }, "#FFEB3B");
+  }, []);
+  
   // 데이터를 캘린더에 사용할 수 있도록 파싱.
   const scheduleParser = useCallback((array, type) => {
     return array.map((data) => {
+      const bgColor = bgColorParser(data);
       if(type === "휴가") {
         return {
           ...data,
           calendarId: "98",
           title: data.text,
           body: data.count,
-          bgColor: "yellow",
+          bgColor,
+          type: data.category,
           category: "time",
           isAllDay: !/반차/.test(data.category),
         }
@@ -88,12 +116,13 @@ const Tui = () => {
         ...data, 
         calendarId: "99", 
         body: data.text, 
-        bgColor: "yellow", 
+        bgColor, 
+        type: data.category,
         category: "time",
         isAllDay: false,
       };
     });
-  }, []);
+  }, [bgColorParser]);
 
   // 초기 캘린더 스케쥴 데이터 이닛.
   const initSchedule = useCallback( async () => {
@@ -150,7 +179,77 @@ const Tui = () => {
   ], [monthChange, month, monthToday]);
 
   // 일정 생성.
-  const createSchedule = useCallback(({ start, end, isAllDay }) => {
+  const createSchedule = useCallback( async (data) => {
+    try {
+      console.log(data);
+
+      const localToken = window.localStorage.getItem(LOCALSTORAGE);
+
+      const token = JSON.parse(localToken);
+
+      if(data.category === "휴가") {
+        const startEndDate = data.startIsEnd ? moment(data.start).format("YYYY년 MM월 DD일") :
+        moment(data.start).format("YYYY년 MM월 DD일") + " ~ " + moment(data.end).format("YYYY년 MM월 DD일");
+       
+        const titleValidation = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.exec(data.title);
+
+        if(!titleValidation || !titleValidation[1]) {
+          throw new Error("제목에 내용만 입력해주세요. 예) 휴가");
+        }
+
+        const { response, result, status, message } = await requestAxios({ 
+          method: "post", 
+          url: `/api/message/post`, 
+          headers: {
+            "authorization": token.token
+          }, 
+          data: {
+            text: `[준명] ${startEndDate} ${titleValidation[1]}`,
+            channel: HOLIDAY_CHANNEL,
+            as_user: true
+          } 
+        });
+
+        if(!result || status === 500) {
+          throw new Error(message);
+        }
+
+        console.log(response);
+      } else {
+        /**
+         * 일정 추가에 관한 서버 호출.
+         */
+        console.log("일정 추가.");
+      }
+
+      // 결과값 파싱 -> 파싱 값 배열 추가.
+
+      closeModalAction();
+      openAlertAction("일정이 생성되었습니다.");
+    } catch(err) {
+      console.log(err);
+      closeModalAction();
+      openAlertAction("일정 생성에 실패하였습니다. " + err.message || err);
+    }
+  }, [closeModalAction, openAlertAction]);
+
+  // 일정 수정.
+  const updateSchedule = useCallback((data) => {
+    console.log("update Schedule");
+
+    // 일정 클릭 -> 모달 오픈 및 모달내에서 수정 -> 확인 및 업데이트 완료 시 호출.
+    openAlertAction("일정이 수정되었습니다.");
+  }, [openAlertAction]);
+
+  // 일정 삭제.
+  const deleteSchedule = useCallback((data) => {
+    calendarDeleteAction(data);
+    closeModalAction();
+    openAlertAction("일정이 삭제되었습니다.");
+  }, [calendarDeleteAction, closeModalAction, openAlertAction]);
+
+  // 일정 생성 팝업 오픈.
+  const createPopup = useCallback(({ start, end, isAllDay }) => {
     openModalAction({ 
       contents: <CalendarModal 
         value={{ 
@@ -158,25 +257,13 @@ const Tui = () => {
           end: end._date, 
           isAllDay,
         }} 
+        createSchedule={createSchedule}
       />, 
       ...calendarModalOptions 
     });
-  }, [openModalAction]);
+  }, [openModalAction, createSchedule]);
 
-  // 일정 수정.
-  const updateSchedule = useCallback(() => {
-    console.log("update Schedule");
-
-    // 일정 클릭 -> 모달 오픈 및 모달내에서 수정 -> 확인 및 업데이트 완료 시 호출.
-  }, []);
-
-  // 일정 삭제.
-  // const deleteSchedule = useCallback(() => {
-  //   console.log("delete Schedule");
-    // 일정 클릭 -> 모달 오픈 및 수정/삭제 중 -> 삭제 클릭 시 호출.
-  // }, []);
-
-  // 일정 클릭.
+  // 일정 클릭 및 팝업 오픈.
   const clickSchedule = useCallback((e) => {
     const selectItem = schedules.reduce((first, data) => {
       if(data.id === e.schedule.id) {
@@ -186,10 +273,18 @@ const Tui = () => {
       return first;
     }, {});
 
-    openModalAction({ contents: <CalendarModal value={{
-      ...selectItem
-    }} />, ...calendarModalOptions });
-  }, [openModalAction, schedules]);
+    openModalAction({ 
+      contents: <ConfirmModal 
+        value={{
+          ...selectItem,
+        }}
+        edit
+        deleteSchedule={deleteSchedule} 
+      />, 
+      ...calendarModalOptions, 
+      height: 641
+    });
+  }, [openModalAction, schedules, deleteSchedule]);
 
   return (
     <>
@@ -226,7 +321,7 @@ const Tui = () => {
             narrowWeekend : true,
             isAlways6Week : true
           }}
-          onBeforeCreateSchedule={createSchedule}
+          onBeforeCreateSchedule={createPopup}
           onBeforeUpdateSchedule={updateSchedule}
           onClickSchedule={clickSchedule}
         />
