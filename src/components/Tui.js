@@ -1,13 +1,15 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import ChevronLeftOutlinedIcon from '@material-ui/icons/ChevronLeftOutlined';
 import ChevronRightOutlinedIcon from '@material-ui/icons/ChevronRightOutlined';
 import Calendar from '@toast-ui/react-calendar';
 import 'tui-calendar/dist/tui-calendar.css';
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { openModal } from '../actions/modal';
 import CalendarModal from '../components/Calendar';
+import { calendarInit } from '../actions/calendar';
+import { requestAxios } from '../util/request';
 
 const Container = styled.div`
   height: 80vmin;
@@ -64,6 +66,62 @@ const Tui = () => {
   const [ month, setMonth ] = useState(now);
   const calendarRef = useRef();
   const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
+  const calendarInitAction = useCallback((payload) => dispatch(calendarInit(payload)), [dispatch]);
+  const { schedules } = useSelector(state => state.calendarEventReducer);
+
+  // 데이터를 캘린더에 사용할 수 있도록 파싱.
+  const scheduleParser = useCallback((array, type) => {
+    return array.map((data) => {
+      if(type === "휴가") {
+        return {
+          ...data,
+          calendarId: "98",
+          title: data.text,
+          body: data.count,
+          bgColor: "yellow",
+          category: "time",
+          isAllDay: !/반차/.test(data.category),
+        }
+      }
+
+      return { 
+        ...data, 
+        calendarId: "99", 
+        body: data.text, 
+        bgColor: "yellow", 
+        category: "time",
+        isAllDay: false,
+      };
+    });
+  }, []);
+
+  // 초기 캘린더 스케쥴 데이터 이닛.
+  const initSchedule = useCallback( async () => {
+    try {
+      const { response, result, status, message } = await requestAxios({ method: "get", url: `/holiday/all` });
+    
+      if(!result || status === 500) {
+        throw new Error(message);
+      }
+
+      /**
+       * 일정 관련 데이터도 가져오기.
+       * 휴가 관련 데이터와 합치기.
+       */
+
+      const parseItem = scheduleParser(response.data, "휴가");
+
+      calendarInitAction(parseItem);
+    } catch(err) {
+      console.log(err);
+      window.alert(err.message || err);
+    }
+  }, [calendarInitAction, scheduleParser]);
+
+  // 초기 캘린더 데이터 이펙트.
+  useEffect(() => {
+    initSchedule();
+  }, [initSchedule]);
 
   // 월 변경.
   const monthChange = useCallback((type) => {
@@ -93,14 +151,14 @@ const Tui = () => {
 
   // 일정 생성.
   const createSchedule = useCallback(({ start, end, isAllDay }) => {
-    const startDate = moment(start._date).format("YYYY-MM-DD ddd HH:mm:ss");
-    const endDate = moment(end._date).format("YYYY-MM-DD ddd HH:mm:ss");
     openModalAction({ 
-      contents: <CalendarModal value={{ 
-        start: startDate, 
-        end: endDate, 
-        isAllDay 
-      }} />, 
+      contents: <CalendarModal 
+        value={{ 
+          start: start._date, 
+          end: end._date, 
+          isAllDay,
+        }} 
+      />, 
       ...calendarModalOptions 
     });
   }, [openModalAction]);
@@ -120,9 +178,18 @@ const Tui = () => {
 
   // 일정 클릭.
   const clickSchedule = useCallback((e) => {
-    console.log(e);
-    openModalAction({ contents: <CalendarModal />, ...calendarModalOptions });
-  }, [openModalAction]);
+    const selectItem = schedules.reduce((first, data) => {
+      if(data.id === e.schedule.id) {
+        return { ...data };
+      }
+
+      return first;
+    }, {});
+
+    openModalAction({ contents: <CalendarModal value={{
+      ...selectItem
+    }} />, ...calendarModalOptions });
+  }, [openModalAction, schedules]);
 
   return (
     <>
@@ -138,12 +205,11 @@ const Tui = () => {
       </MonthButtonLayout>
       <Container>
         <Calendar 
-          schedules={[]}  // redux state
           height="100%"
+          schedules={schedules}
           ref={calendarRef}
-          disableDblClick={true}
-          disableClick={false}
-          isReadOnly={false}
+          disableDblClick
+          disableClick
           timezones={[
             {
               timezoneOffset: 540,
@@ -151,8 +217,6 @@ const Tui = () => {
               tooltip: 'Seoul'
             }
           ]}
-          useDetailPopup={false}
-          useCreationPopup={false}
           view={"month"}
           month={{
             daynames: monthView,
