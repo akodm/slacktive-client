@@ -31,16 +31,13 @@ const Box = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 375px;
+  width: 100%;
+  max-width: 375px;
   min-height: 150px;
   border-radius: 8px;
   background-color: white;
   position: absolute;
   z-index: 1002;
-
-  @media (max-width: 375px) {
-    width: 100%;
-  }
 `;
 
 const ContentsBox = styled.span`
@@ -59,7 +56,7 @@ const AnimBox = animated(Box);
 
 const Alert = () => {
   const dispatch = useDispatch();
-  const { contents } = useSelector(state => state.modalOpenCloseReducer);
+  const { contents } = useSelector(state => state.alertOpenCloseReducer);
   const closeAlertAction = useCallback(() => dispatch(closeAlert()), [dispatch]);
   const animProps = useSpring({
     to: {

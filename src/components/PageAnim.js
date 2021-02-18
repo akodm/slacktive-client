@@ -4,11 +4,12 @@ import { useTransition, animated } from 'react-spring';
 
 const AnimatedWrapperDiv = animated(styled.div`
   display: flex;
+  width: 100%;
   height: 100%;
   margin-left: 90px;
   margin-bottom: 0px;
 
-  @media (max-width: 500px) {
+  @media (max-width: 950px) {
     margin-left: 0px;
     margin-bottom: 40px;
   }

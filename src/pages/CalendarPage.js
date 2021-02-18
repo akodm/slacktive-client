@@ -11,6 +11,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100vh;
 `;
 
 const TopWrapper = styled.div`
@@ -18,7 +19,7 @@ const TopWrapper = styled.div`
   flex-direction: column;
   padding: 32px;
 
-  @media (max-width: 500px) {
+  @media (max-width: 950px) {
     padding: 16px;
   }
 `;
@@ -48,7 +49,7 @@ const TopLayout = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  @media (max-width: 500px) {
+  @media (max-width: 950px) {
     flex-direction: column-reverse;
     align-items: flex-start;
   }
@@ -78,7 +79,7 @@ const TopIcon = styled.img`
   height: 85px;
   object-fit: cover;
 
-  @media (max-width: 500px) {
+  @media (max-width: 950px) {
     margin-bottom: 20px;
   }
 `;
@@ -92,7 +93,7 @@ const TopTodayLane = styled.div`
   background-color: rgba(0, 0, 0, 0.17);
   margin-top: 30px;
 
-  @media (max-width: 500px) {
+  @media (max-width: 950px) {
     margin-top: 16px;
   }
 `;
@@ -113,18 +114,8 @@ const TodayText = styled.span`
   color: #ffffff;
   margin: 15px;
 
-  @media (max-width: 510px) {
-    font-size: calc(5px + 1vmin);
-    margin: 10px;
-  }
-
   @media (max-width: 390px) {
     font-size: calc(4px + 1vmin);
-    margin: 8px;
-  }
-
-  @media (max-width: 500px) {
-    font-size: 18px;
     margin: 8px;
   }
 `;
@@ -136,11 +127,6 @@ const TodayUserText = styled.span`
   color: #ffffff;
   margin: 5px;
 
-  @media (max-width: 510px) {
-    font-size: calc(5px + 1vmin);
-    margin: 2px;
-  }
-
   @media (max-width: 390px) {
     font-size: calc(3px + 1vmin);
     margin: 1px;
@@ -149,8 +135,6 @@ const TodayUserText = styled.span`
   @media (max-width: 500px) {
     display: flex;
     align-items: center;
-    font-size: 18px;
-    margin: 8px;
   }
 `;
 
@@ -209,8 +193,8 @@ const CardContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items: center;
-  flex: 1;
+  align-items: flex-start;
+  flex: 1 0 auto;
   overflow-x: scroll;
   min-height: 170px;
   background-color: #faefe0;
@@ -304,7 +288,7 @@ const emptyTask = `오늘의 일정이 없습니다.`;
 
 const dummy1 = ["더미", "더미", "더미"];
 const dummy2 = ["더미", "더미"];
-const browserSize = 375;
+const browserSize = 467;
 
 const cardDummy = [
   { id: 0, title: "강남 출장 있습니다.", participation: [{ name: "더미", tag: "design" }], start: new Date(), end: new Date(), text: "", category: "출장" },

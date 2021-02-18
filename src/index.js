@@ -35,12 +35,10 @@ const ResetCss = createGlobalStyle`
 `;
 
 ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <ResetCss />
-      <App />
-    </Provider>
-  </React.StrictMode>,
+  <Provider store={store}>
+    <ResetCss />
+    <App />
+  </Provider>,
   document.getElementById('root')
 );
 

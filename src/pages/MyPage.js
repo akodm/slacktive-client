@@ -10,6 +10,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100vh;
 `;
 
 const TopWrapper = styled.div`
@@ -228,6 +229,7 @@ const CastleImg = styled.img`
 const HolidayContainer = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 0 auto;
   min-height: 100px;
   padding: 40px;
   background-color: white;
@@ -259,7 +261,8 @@ const HolidayTagLayout = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 8px;
+  margin-bottom: 7px;
 `;
 
 const HolidayTagImg = styled.img`
