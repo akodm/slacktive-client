@@ -209,7 +209,8 @@ const Tui = () => {
           schedules={schedules}
           ref={calendarRef}
           disableDblClick
-          disableClick
+          disableClick={false}
+          isReadOnly={false}
           timezones={[
             {
               timezoneOffset: 540,
@@ -217,6 +218,8 @@ const Tui = () => {
               tooltip: 'Seoul'
             }
           ]}
+          useCreationPopup={false}
+          useDetailPopup={false}
           view={"month"}
           month={{
             daynames: monthView,
