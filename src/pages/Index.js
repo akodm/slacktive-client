@@ -16,6 +16,7 @@ import Develop from './Develop';
 import Menu from '../components/Menu';
 import Alert from '../components/Alert';
 import Modal from '../components/Modal';
+import Loadmask from '../components/Loadmask';
 
 const Container = styled.div`
   display: flex;
@@ -119,6 +120,7 @@ function Index(props) {
   return (
     <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
+      <Loadmask />
       { alert && <Alert /> }
       { modal && <Modal /> }
       <Switch>

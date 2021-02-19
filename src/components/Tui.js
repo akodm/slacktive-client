@@ -11,6 +11,7 @@ import CalendarModal from '../components/Calendar';
 import ConfirmModal from '../components/Confirm';
 import { openAlert } from '../actions/alert';
 import { calendarInit, calendarDelete, calendarAdd } from '../actions/calendar';
+import { loadmaskOff, loadmaskOn } from '../actions/loadmask';
 import { closeModal } from '../actions/modal';
 import { requestAxios } from '../util/request';
 import { LOCALSTORAGE, HOLIDAY_CHANNEL } from '../config';
@@ -72,6 +73,18 @@ const category = [
   { select: "5", text: "기타", colors: "#ff98c3" },
 ];
 
+// 토큰 반환.
+const tokenReturn = () => {
+  const local = window.localStorage.getItem(LOCALSTORAGE);
+
+  const { token, result } = JSON.parse(local);
+
+  return {
+    token,
+    result
+  };
+};
+
 const Tui = () => {
   const dispatch = useDispatch();
   const [ month, setMonth ] = useState(now);
@@ -82,6 +95,8 @@ const Tui = () => {
   const calendarInitAction = useCallback((payload) => dispatch(calendarInit(payload)), [dispatch]);
   const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
   const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
+  const loadmaskOnAction = useCallback(() => dispatch(loadmaskOn()), [dispatch]);
+  const loadmaskOffAction = useCallback(() => dispatch(loadmaskOff()), [dispatch]);
   const { schedules } = useSelector(state => state.calendarEventReducer);
 
   // 캘린더 일정 색상 파싱.
@@ -178,43 +193,68 @@ const Tui = () => {
     { key: "next", icon: <NextBtn />, text: "다음 달", onClick: () => monthChange(true) },
   ], [monthChange, month, monthToday]);
 
+  // 휴가 채널에 메시지 보내기.
+  const messagePostHolidayChannel = useCallback( async (data) => {
+    try {
+      loadmaskOnAction();
+
+      const { token } = tokenReturn();
+
+      const startEndDate = data.startIsEnd ? moment(data.start).format("YYYY년 MM월 DD일") :
+      moment(data.start).format("YYYY년 MM월 DD일") + " ~ " + moment(data.end).format("YYYY년 MM월 DD일");
+     
+      const titleValidation = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.exec(data.title);
+
+      if(!titleValidation || !titleValidation[1] || !/.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.test(data.title)) {
+        throw new Error("제목에 내용만 입력해주세요. 예) 휴가");
+      }
+
+      const { response, result, status, message } = await requestAxios({ 
+        method: "post", 
+        url: `/api/message/post`, 
+        headers: {
+          "authorization": token
+        }, 
+        data: {
+          text: `[준명] ${startEndDate} ${titleValidation[1]}`,
+          channel: HOLIDAY_CHANNEL,
+          as_user: true
+        }
+      });
+
+      if(!result || status === 500) {
+        throw new Error(message);
+      }
+
+      return {
+        response,
+        result,
+        message
+      }
+    } catch(err) {
+      console.log(err.message || err);
+      return {
+        err: true,
+        message: err.message || err
+      };
+    }
+  }, [loadmaskOnAction]);
+
   // 일정 생성.
   const createSchedule = useCallback( async (data) => {
     try {
       console.log(data);
 
-      const localToken = window.localStorage.getItem(LOCALSTORAGE);
-
-      const token = JSON.parse(localToken);
-
       if(data.category === "휴가") {
-        const startEndDate = data.startIsEnd ? moment(data.start).format("YYYY년 MM월 DD일") :
-        moment(data.start).format("YYYY년 MM월 DD일") + " ~ " + moment(data.end).format("YYYY년 MM월 DD일");
-       
-        const titleValidation = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.exec(data.title);
+        const { result, message } = await messagePostHolidayChannel(data);
 
-        if(!titleValidation || !titleValidation[1]) {
-          throw new Error("제목에 내용만 입력해주세요. 예) 휴가");
-        }
-
-        const { response, result, status, message } = await requestAxios({ 
-          method: "post", 
-          url: `/api/message/post`, 
-          headers: {
-            "authorization": token.token
-          }, 
-          data: {
-            text: `[준명] ${startEndDate} ${titleValidation[1]}`,
-            channel: HOLIDAY_CHANNEL,
-            as_user: true
-          } 
-        });
-
-        if(!result || status === 500) {
+        if(!result) {
           throw new Error(message);
         }
 
-        console.log(response);
+        /**
+         * 소켓 on 이벤트로 데이터 받아와서 반영.
+         */
       } else {
         /**
          * 일정 추가에 관한 서버 호출.
@@ -224,14 +264,16 @@ const Tui = () => {
 
       // 결과값 파싱 -> 파싱 값 배열 추가.
 
+      loadmaskOffAction();
       closeModalAction();
       openAlertAction("일정이 생성되었습니다.");
     } catch(err) {
-      console.log(err);
+      console.log(err.message || err);
+      loadmaskOffAction();
       closeModalAction();
       openAlertAction("일정 생성에 실패하였습니다. " + err.message || err);
     }
-  }, [closeModalAction, openAlertAction]);
+  }, [closeModalAction, openAlertAction, messagePostHolidayChannel, loadmaskOffAction]);
 
   // 일정 수정.
   const updateSchedule = useCallback((data) => {
@@ -243,6 +285,12 @@ const Tui = () => {
 
   // 일정 삭제.
   const deleteSchedule = useCallback((data) => {
+
+    /**
+     * 디비에서도 삭제 시키는 내용 필요.
+     * 실제 채널에서 삭제 시키는 내용 필요. ( 여부 묻기. )
+     */
+
     calendarDeleteAction(data);
     closeModalAction();
     openAlertAction("일정이 삭제되었습니다.");

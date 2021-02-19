@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { SERVER_URL, LOCALSTORAGE} from '../config';
 
-export const requestAxios = async ({ method = "get", url, data, headers, loadmask = false, isConsole = false }) => {
+export const requestAxios = async ({ method = "get", url, data, headers, isConsole = false }) => {
   try {
     const { data: result } = await axios({
       url: `${SERVER_URL}${url}`,

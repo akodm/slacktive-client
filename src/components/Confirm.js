@@ -251,7 +251,7 @@ const Confirm = props => {
   const btns = useMemo(() => [
     { key: "update", text: "수정", onClick: () => console.log("update"), colors: "#6c84ff" },
     { key: "delete", text: "삭제", onClick: () => deleteSchedule(values), colors: "#777777" },
-  ], [deleteSchedule]);
+  ], [deleteSchedule, values]);
 
   return <Container>
     <Head>
