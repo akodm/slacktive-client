@@ -6,13 +6,12 @@ import Calendar from '@toast-ui/react-calendar';
 import 'tui-calendar/dist/tui-calendar.css';
 import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
-import { openModal } from '../actions/modal';
+import { openModal, closeModal } from '../actions/modal';
 import CalendarModal from '../components/Calendar';
 import ConfirmModal from '../components/Confirm';
 import { openAlert } from '../actions/alert';
-import { calendarInit, calendarDelete, calendarAdd } from '../actions/calendar';
+import { calendarInit, calendarDelete, calendarAdd, calendarUpdate } from '../actions/calendar';
 import { loadmaskOff, loadmaskOn } from '../actions/loadmask';
-import { closeModal } from '../actions/modal';
 import { requestAxios } from '../util/request';
 import { LOCALSTORAGE, HOLIDAY_CHANNEL } from '../config';
 
@@ -73,6 +72,10 @@ const category = [
   { select: "5", text: "기타", colors: "#ff98c3" },
 ];
 
+/**
+ * calendarId => 98: 휴가, 99: 일정.
+ */
+
 // 토큰 반환.
 const tokenReturn = () => {
   const local = window.localStorage.getItem(LOCALSTORAGE);
@@ -94,6 +97,7 @@ const Tui = () => {
   const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
   const calendarInitAction = useCallback((payload) => dispatch(calendarInit(payload)), [dispatch]);
   const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
+  const calendarUpdateAction = useCallback((payload) => dispatch(calendarUpdate(payload)), [dispatch]);
   const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
   const loadmaskOnAction = useCallback(() => dispatch(loadmaskOn()), [dispatch]);
   const loadmaskOffAction = useCallback(() => dispatch(loadmaskOff()), [dispatch]);
@@ -112,7 +116,9 @@ const Tui = () => {
   
   // 데이터를 캘린더에 사용할 수 있도록 파싱.
   const scheduleParser = useCallback((array, type) => {
-    return array.map((data) => {
+    let result = Array.isArray(array) ? array : [array];
+
+    return result.map((data) => {
       const bgColor = bgColorParser(data);
       if(type === "휴가") {
         return {
@@ -143,19 +149,26 @@ const Tui = () => {
   const initSchedule = useCallback( async () => {
     try {
       const { response, result, status, message } = await requestAxios({ method: "get", url: `/holiday/all` });
-    
-      if(!result || status === 500) {
-        throw new Error(message);
+      const { response: taskResponse, result: taskResult, status: taskStatus, message: taskMessage } = await requestAxios({ method: "get", url: `/task/all` });
+
+      if(!result || status === 500 || !taskResult || taskStatus === 500) {
+        throw new Error(message || taskMessage);
       }
 
-      /**
-       * 일정 관련 데이터도 가져오기.
-       * 휴가 관련 데이터와 합치기.
-       */
-
+      const parseItemTask = scheduleParser(taskResponse.data, "일정");
       const parseItem = scheduleParser(response.data, "휴가");
 
-      calendarInitAction(parseItem);
+      const newItems = [];
+      
+      parseItemTask.forEach(data => {
+        newItems.push({ ...data });
+      });
+
+      parseItem.forEach(data => {
+        newItems.push({ ...data });
+      });
+
+      calendarInitAction(newItems);
     } catch(err) {
       console.log(err);
       window.alert(err.message || err);
@@ -203,9 +216,10 @@ const Tui = () => {
       const startEndDate = data.startIsEnd ? moment(data.start).format("YYYY년 MM월 DD일") :
       moment(data.start).format("YYYY년 MM월 DD일") + " ~ " + moment(data.end).format("YYYY년 MM월 DD일");
      
-      const titleValidation = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.exec(data.title);
+      const titleExp = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/;
+      const titleValidation = titleExp.exec(data.title);
 
-      if(!titleValidation || !titleValidation[1] || !/.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.test(data.title)) {
+      if(!titleValidation || !titleValidation[1] || !titleExp.test(data.title)) {
         throw new Error("제목에 내용만 입력해주세요. 예) 휴가");
       }
 
@@ -232,7 +246,37 @@ const Tui = () => {
         message
       }
     } catch(err) {
-      console.log(err.message || err);
+      return {
+        err: true,
+        message: err.message || err
+      };
+    }
+  }, [loadmaskOnAction]);
+
+  // 일정 서버 코드.
+  const taskProcess = useCallback( async (data, method, url) => {
+    try {
+      loadmaskOnAction();
+
+      const { response, result, status, message } = await requestAxios({ 
+        method,
+        url,
+        data: {
+          ...data,
+          start: moment(data.start).format("YYYY-MM-DD HH:mm"),
+          end: moment(data.end).format("YYYY-MM-DD HH:mm"),
+        }
+      });
+
+      if(!result || status === 500) {
+        throw new Error(message);
+      }
+
+      return {
+        response,
+        result,
+      }
+    } catch(err) {
       return {
         err: true,
         message: err.message || err
@@ -243,7 +287,7 @@ const Tui = () => {
   // 일정 생성.
   const createSchedule = useCallback( async (data) => {
     try {
-      console.log(data);
+      let item = null;
 
       if(data.category === "휴가") {
         const { result, message } = await messagePostHolidayChannel(data);
@@ -255,15 +299,19 @@ const Tui = () => {
         /**
          * 소켓 on 이벤트로 데이터 받아와서 반영.
          */
+
+        // item = scheduleParser({ ...response.result })[0];
       } else {
-        /**
-         * 일정 추가에 관한 서버 호출.
-         */
-        console.log("일정 추가.");
+        const { result, message, response } = await taskProcess(data, "post", "/task/add/one");
+
+        if(!result) {
+          throw new Error(message);
+        }
+
+        item = scheduleParser({ ...response.data })[0];
       }
 
-      // 결과값 파싱 -> 파싱 값 배열 추가.
-
+      item && calendarAddAction(item);
       loadmaskOffAction();
       closeModalAction();
       openAlertAction("일정이 생성되었습니다.");
@@ -273,28 +321,70 @@ const Tui = () => {
       closeModalAction();
       openAlertAction("일정 생성에 실패하였습니다. " + err.message || err);
     }
-  }, [closeModalAction, openAlertAction, messagePostHolidayChannel, loadmaskOffAction]);
+  }, [closeModalAction, openAlertAction, messagePostHolidayChannel, loadmaskOffAction, taskProcess, scheduleParser, calendarAddAction]);
 
   // 일정 수정.
-  const updateSchedule = useCallback((data) => {
-    console.log("update Schedule");
-
-    // 일정 클릭 -> 모달 오픈 및 모달내에서 수정 -> 확인 및 업데이트 완료 시 호출.
-    openAlertAction("일정이 수정되었습니다.");
-  }, [openAlertAction]);
+  const updateSchedule = useCallback( async (e) => {
+    try {
+      const newItem = schedules.map(data => {
+        if(data.id === e.id && data.calendarId === e.calendarId) {
+          return { ...scheduleParser(e)[0] };
+        }
+        return { ...data };
+      });
+  
+      if(e.calendarId === "98") {
+        // 휴가 처리...
+        // 휴가의 경우 실제 채널에서 메시지가 수정됨을 인지시켜주기.
+      }
+  
+      if(e.calendarId === "99") {
+        const { result, message } = await taskProcess(e, "put", "/task/update/one");
+      
+        if(!result) {
+          throw new Error(message);
+        }
+      }
+  
+      calendarUpdateAction(newItem)
+      loadmaskOffAction();
+      closeModalAction();
+      openAlertAction("일정이 수정되었습니다.");
+    } catch(err) {
+      console.log(err.message || err);
+      loadmaskOffAction();
+      closeModalAction();
+      openAlertAction("정상 처리 되지 않았습니다. " + err.message || err);
+    }
+  }, [loadmaskOffAction, openAlertAction, closeModalAction, calendarUpdateAction, schedules, scheduleParser, taskProcess]);
 
   // 일정 삭제.
-  const deleteSchedule = useCallback((data) => {
-
-    /**
-     * 디비에서도 삭제 시키는 내용 필요.
-     * 실제 채널에서 삭제 시키는 내용 필요. ( 여부 묻기. )
-     */
-
-    calendarDeleteAction(data);
-    closeModalAction();
-    openAlertAction("일정이 삭제되었습니다.");
-  }, [calendarDeleteAction, closeModalAction, openAlertAction]);
+  const deleteSchedule = useCallback( async (e) => {
+    try {
+      if(e.calendarId === "98") {
+        // 휴가 삭제 처리...
+        // 휴가의 경우 실제 채널에서 메시지가 삭제됨을 인지시켜주기.
+      }
+  
+      if(e.calendarId === "99") {
+        const { result, message } = await taskProcess(e, "delete", `/task/delete/one?id=${e.id}`);
+        
+          if(!result) {
+            throw new Error(message);
+          }
+      }
+  
+      calendarDeleteAction(e);
+      loadmaskOffAction();
+      closeModalAction();
+      openAlertAction("일정이 삭제되었습니다.");
+    } catch(err) {
+      console.log(err.message |err);
+      loadmaskOffAction();
+      closeModalAction();
+      openAlertAction("일정이 삭제되었습니다.");
+    }
+  }, [calendarDeleteAction, closeModalAction, openAlertAction, taskProcess, loadmaskOffAction]);
 
   // 일정 생성 팝업 오픈.
   const createPopup = useCallback(({ start, end, isAllDay }) => {
@@ -311,10 +401,24 @@ const Tui = () => {
     });
   }, [openModalAction, createSchedule]);
 
+  // 일정 수정 팝업 오픈.
+  const updatePopup = useCallback((e) => {
+    openModalAction({ 
+      contents: <CalendarModal 
+        value={{ 
+          ...e
+        }} 
+        edit
+        updateSchedule={updateSchedule}
+      />, 
+      ...calendarModalOptions 
+    });
+  }, [openModalAction, updateSchedule]);
+
   // 일정 클릭 및 팝업 오픈.
   const clickSchedule = useCallback((e) => {
     const selectItem = schedules.reduce((first, data) => {
-      if(data.id === e.schedule.id) {
+      if(data.id === e.schedule.id && data.calendarId === e.schedule.calendarId) {
         return { ...data };
       }
 
@@ -326,13 +430,13 @@ const Tui = () => {
         value={{
           ...selectItem,
         }}
-        edit
         deleteSchedule={deleteSchedule} 
+        updatePopup={updatePopup}
       />, 
       ...calendarModalOptions, 
       height: 641
     });
-  }, [openModalAction, schedules, deleteSchedule]);
+  }, [openModalAction, schedules, deleteSchedule, updatePopup]);
 
   return (
     <>
@@ -370,7 +474,6 @@ const Tui = () => {
             isAlways6Week : true
           }}
           onBeforeCreateSchedule={createPopup}
-          onBeforeUpdateSchedule={updateSchedule}
           onClickSchedule={clickSchedule}
         />
       </Container>

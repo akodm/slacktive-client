@@ -155,6 +155,19 @@ const SubmitButton = styled.div`
   }
 `;
 
+const ExText = styled.div`
+  margin-top: 25px;
+  font-family: NanumBarunGothic;
+  font-size: 18px;
+  color: #039BE5;
+`;
+
+// 유저 이미지들.
+const userImgs = [
+  { tag: "develop", img: "/img/calendar/cardImg1.png" },
+  { tag: "design", img: "/img/calendar/cardImg2.png" },
+];
+
 // 날짜 포맷.
 const formatDate = (date) => {
   return moment(date).format("YYYY. M. D (ddd) ");
@@ -167,10 +180,23 @@ const formatTime = (time) => {
 
 const Confirm = props => {
   // 초기 밸류.
-  const { value: values, edit, deleteSchedule } = props;
+  const { value: values, deleteSchedule, updatePopup, disabled = false } = props;
 
-  // 헤더 텍스트.
-  const headTextEdit = useMemo(() => edit ? "일정 수정하기" : "일정 등록하기", [edit]);
+  // 수정 팝업 오픈.
+  const popupOpen = useCallback((data) => {
+    updatePopup && updatePopup(data);
+  }, [updatePopup]);
+
+  // 유저 이미지 추출.
+  const participationImg = useCallback((data) => {
+    return userImgs.reduce((result, imgs) => {
+      if(data.tag === imgs.tag) {
+        return imgs.img;
+      }
+
+      return result;
+    }, "/img/calendar/cardImg1.png");
+  }, []);
 
   //  뷰들.
   const views = useMemo(() => [
@@ -219,10 +245,17 @@ const Confirm = props => {
         overflowX: "auto"
       },
       component: <ParticipationLayout>
-        <ParticipationBox>
-          <ParticipationIcon alt="icon" src="/img/calendar/cardImg1.png" />
-          <ParticipationName>{"Hello World...?"}</ParticipationName>
-        </ParticipationBox>
+        {
+          (Array.isArray(values.participation) && values.participation[0]) ? values.participation.map((data, idx) => {
+            const src = participationImg(data);
+            return <ParticipationBox key={idx}>
+              <ParticipationIcon alt="icon" src={src} />
+              <ParticipationName>{data.name || "???"}</ParticipationName>
+            </ParticipationBox>
+          })
+          :
+          "다른 참여인원은 없습니다."
+        }
       </ParticipationLayout>
     },
     {
@@ -233,10 +266,10 @@ const Confirm = props => {
         whiteSpace: "pre-line"
       },
       component: <ViewText>
-        {values.text}
+        {values.text || "메모사항이 없습니다."}
       </ViewText>
     },
-  ], [values]);
+  ], [values, participationImg]);
 
   // 뷰 컴포넌트.
   const ViewComponents = useCallback((option) => {
@@ -249,13 +282,13 @@ const Confirm = props => {
 
   // 버튼들.
   const btns = useMemo(() => [
-    { key: "update", text: "수정", onClick: () => console.log("update"), colors: "#6c84ff" },
+    { key: "update", text: "수정", onClick: () => popupOpen(values), colors: "#6c84ff" },
     { key: "delete", text: "삭제", onClick: () => deleteSchedule(values), colors: "#777777" },
-  ], [deleteSchedule, values]);
+  ], [deleteSchedule, popupOpen, values]);
 
   return <Container>
     <Head>
-      <HeadText>{headTextEdit}</HeadText>
+      <HeadText>일정 확인</HeadText>
     </Head>
     <HeadLine />
     <Body>
@@ -263,9 +296,11 @@ const Confirm = props => {
         return <ViewComponents {...data} key={idx} />
       })}
       <Layout>
-        {btns.map((data, idx) => {
+        {!disabled ? btns.map((data, idx) => {
           return <SubmitButton {...data} key={idx}>{data.text}</SubmitButton>
-        })}
+        })
+        : <ExText>수정 또는 삭제는 캘린더에서 해주세요.</ExText>
+        }
       </Layout>
     </Body>
   </Container>

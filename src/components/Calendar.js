@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo } from 'react';
 import styled from 'styled-components';
-// import moment from 'moment';
+import moment from 'moment';
 import TextField from '@material-ui/core/TextField';
 import {
   KeyboardTimePicker,
@@ -222,23 +222,25 @@ const Calendar = props => {
       start: new Date(),
       end: new Date(),
       isAllDay: false,
+      type: "출장/미팅",
     }, 
     edit = false,
     createSchedule,
+    updateSchedule,
   } = props;
   const [ values, setValues ] = useState(
     { 
-      ...value, 
       title: "",
       startTime: new Date(),
       endTime: new Date(),
-      category: "출장/미팅",
       startIsEnd: false,
       participation: [],
       participationText: "",
       text: "",
+      ...value, 
+      category: value.type || "출장/미팅",
     }
-  ); 
+  );
 
   // 헤더 텍스트.
   const headTextEdit = useMemo(() => edit ? "일정 수정하기" : "일정 등록하기", [edit]);
@@ -256,7 +258,7 @@ const Calendar = props => {
   // 날짜 관련 데이터 변경.
   const onChangeCalendarDate = useCallback((date, key) => {
     const items = { ...values };
-    items[key] = date;
+    items[key] = date
     setValues({ ...items });
   }, [values]);
 
@@ -321,8 +323,18 @@ const Calendar = props => {
       return;
     }
 
-    createSchedule(values);
-  }, [createSchedule, values]);
+    if(!values.startIsEnd) {
+      const start = moment(values.start).format("YYYY-MM-DD ") + moment(values.startTime).format("HH:mm");
+      const end = moment(values.end).format("YYYY-MM-DD ") + moment(values.endTime).format("HH:mm");
+
+      if(moment(start).isAfter(end, 'minutes')) {
+        window.alert("날짜 설정이 잘못되었습니다.");
+        return;
+      }
+    }
+
+    edit ? updateSchedule(values) : createSchedule(values);
+  }, [createSchedule, updateSchedule, edit, values]);
 
   // 폼들.
   const forms = useMemo(() => [
@@ -440,6 +452,7 @@ const Calendar = props => {
       component: <FormControl variant="outlined">
         <Select
           value={values.category}
+          disabled={edit}
           onChange={(e) => onChangeCalendarCategory(e, "category")}
           style={{
             width: "100%",
@@ -516,6 +529,7 @@ const Calendar = props => {
       />,
     },
   ], [
+    edit,
     values, 
     participationImg,
     onChangeCalendarModalValue, 

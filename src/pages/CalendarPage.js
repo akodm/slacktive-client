@@ -4,8 +4,10 @@ import ChevronRightOutlinedIcon from '@material-ui/icons/ChevronRightOutlined';
 import { TuiCalendar } from '../components/Tui';
 import { AnimatedWrapper } from '../components/PageAnim';
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { openAlert } from '../actions/alert';
+import ConfirmModal from '../components/Confirm';
+import { openModal } from '../actions/modal';
 
 const Container = styled.div`
   display: flex;
@@ -262,6 +264,7 @@ const CardMember = styled.span`
   font-size: 16px;
   font-weight: bold;
   color: #000000;
+  word-break: keep-all;
 `;
 
 const CardTime = styled.span`
@@ -274,7 +277,12 @@ const CardTime = styled.span`
   position: absolute;
 `;
 
-const EmptyText = styled.span`
+const EmptyText = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   font-family: NanumBarunGothic;
   font-size: 15px;
   color: black;
@@ -290,32 +298,63 @@ const dummy1 = ["더미", "더미", "더미"];
 const dummy2 = ["더미", "더미"];
 const browserSize = 467;
 
-const cardDummy = [
-  { id: 0, title: "강남 출장 있습니다.", participation: [{ name: "더미", tag: "design" }], start: new Date(), end: new Date(), text: "", category: "출장" },
-  { id: 1, title: "전략기획팀 회의 있습니다.", participation: [{ name: "더미", tag: "developer" }, { name: "더미", tag: "manager" }, { name: "더미", tag: "design" }], start: new Date(), end: new Date(), text: "", category: "희의" },
-  { id: 2, title: "해피 버스데이!", participation: [{ name: "더미", tag: "marketing" }], start: new Date(), end: new Date(), text: "", category: "생일" },
-  { id: 3, title: "오늘은 재택 근무입니다.", participation: [{ name: "더미", tag: "developer" }], start: new Date(), end: new Date(), text: "", category: "출장" },
-];
-
 // const cardColor = [
 //   "#d6ff98", "#87dffa", "#b0c0ff"
 // ];
+
+const calendarModalOptions = { width: 570, height: 944, backdrop: true };
+
+// 유저 이미지들.
+const userImgs = [
+  { tag: "develop", img: "/img/calendar/cardImg1.png" },
+  { tag: "design", img: "/img/calendar/cardImg2.png" },
+];
 
 function CalendarPage(props) {
   const dispatch = useDispatch();
   const [ windowSize, setWindowSize ] = useState(window.innerWidth);
   const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
+  const { schedules } = useSelector(state => state.calendarEventReducer);
+  const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
 
+  // 브라우저 리사이즈.
   const browserHandler = useCallback((e) => {
     setWindowSize(window.innerWidth);
   }, []);
 
+  // 브라우저 리사이즈 이벤트 등록.
   useEffect(() => {
     window.addEventListener('resize', browserHandler);
 
     return () => window.removeEventListener('resize', browserHandler);
   }, [browserHandler]);
 
+  // 클릭시 일정 오픈.
+  const clickSchedule = useCallback((e) => {
+    openModalAction({ 
+      contents: <ConfirmModal 
+        value={{
+          ...e,
+        }}
+        disabled
+      />, 
+      ...calendarModalOptions, 
+      height: 641
+    });
+  }, [openModalAction]);
+
+  // 유저 이미지 추출.
+  const participationImg = useCallback((data) => {
+    return userImgs.reduce((result, imgs) => {
+      if(data.tag === imgs.tag) {
+        return imgs.img;
+      }
+
+      return result;
+    }, "/img/calendar/cardImg1.png");
+  }, []);
+
+  // 지각 혹은 휴가자 처리.
   const DisplayUser = useCallback((props) => {
     const { users, type } = props;
     return users[0] ? users.map((value, idx) => {
@@ -342,38 +381,66 @@ function CalendarPage(props) {
     <TodayUserText>없음</TodayUserText>
   }, [windowSize]);
 
+  // 카드 아이템 파싱.
+  const CardItemParser = useCallback(() => {
+    if(Array.isArray(schedules) && schedules[0]) {
+      const parseItem = schedules.filter(data => {
+        if(data.calendarId === "99" && moment(new Date()).isBetween(data.start, data.end, 'days', '[]')) {
+          return true;
+        }
+
+        return false;
+      });
+
+      return parseItem[0] ? parseItem.map((data, idx) => {
+        return <CardItems 
+          key={idx}
+          {...data}
+        />
+      })
+      :
+      <EmptyText>{emptyTask}</EmptyText>;
+    } else {
+      return <EmptyText>{emptyTask}</EmptyText>
+    }
+  }, [schedules]);
+
+  // 카드 아이템.
   const CardItems = useCallback((value) => {
     const { title, participation, start, end } = value;
-    return <CardBox>
+    // props.user.name + (participation.length ? ", " : "") => 본인 자동 포함하고 싶을 경우.
+    let members = "";
+
+    for(let idx = 0; idx < participation.length; idx++) {
+      const comma = participation[idx + 1] ? true : false;
+      if(idx === 2) {
+        members += `외 ${participation.length - idx}명`;
+      }
+      if(idx > 1) {
+        continue;
+      }
+      members += `${participation[idx].name}${(comma && idx !== 1) ? ", " : " "}`;
+    }
+
+    return <CardBox onClick={() => clickSchedule(value)}>
       <CardLine />
       <CardTitle>{title}</CardTitle>
       {
         participation.map((mem, idx) => {
-          const userIcon = mem.tag === "developer" ? "1" : "2";
+          const userIcon = participationImg(mem);
           const right = !idx ? 0 : 25;
           if(idx > 1) {
             return null;
           }
-          return <CardIcons key={idx} src={`/img/calendar/cardImg${userIcon}.png`} alt="icon" right={right}/>
+          return <CardIcons key={idx} src={userIcon} alt="icon" right={right}/>
         })
       }
       <CardMembers>
-        {
-          participation.map((mem, idx) => {
-            const comma = participation[idx + 1] ? true : false;
-            if(idx === 2) {
-              return <CardMember key={idx}> 외 {participation.length - idx}명</CardMember>
-            }
-            if(idx > 1) {
-              return null;
-            }
-            return <CardMember key={idx}>{mem.name}{(comma && idx !== 1) && ","}</CardMember>
-          })
-        }
+        <CardMember>{members}</CardMember>
       </CardMembers>
       <CardTime>{moment(start).format("M.D(ddd)")}{end && ` ~ ${moment(end).format("M.D(ddd)")}`}</CardTime>
     </CardBox>
-  }, []);
+  }, [participationImg, clickSchedule]);
 
   return (
     <AnimatedWrapper>
@@ -405,16 +472,7 @@ function CalendarPage(props) {
           <GroundImg src="/img/calendar/background2.png" alt="img"/>
         </ImgWrapper>
         <CardContainer>
-          {
-            cardDummy[0] ? cardDummy.map(value => {
-              return <CardItems 
-                key={value.id}
-                {...value}
-              />
-            })
-            :
-            <EmptyText>{emptyTask}</EmptyText>
-          }
+          <CardItemParser />
         </CardContainer>
       </Container>
     </AnimatedWrapper>
