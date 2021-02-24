@@ -41,6 +41,7 @@ const Box = styled.div`
 
   @media (max-width: ${props => props.defaultWdith || "375"}px) {
     border-radius: 0px;
+    max-height: 100%;
   }
 `;
 

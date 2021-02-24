@@ -16,6 +16,7 @@ import Develop from './Develop';
 import Menu from '../components/Menu';
 import Alert from '../components/Alert';
 import Modal from '../components/Modal';
+import Loadmask from '../components/Loadmask';
 
 const Container = styled.div`
   display: flex;
@@ -68,11 +69,11 @@ function Index(props) {
 
       const localToken = window.localStorage.getItem(LOCALSTORAGE);
 
-      const token = JSON.parse(localToken);
+      const { token } = JSON.parse(localToken);
 
       const { data } = await axios.get(`${SERVER_URL}/users/token/check`, {
         headers: {
-          "authorization": token.token
+          "authorization": token
         }
       });
 
@@ -119,10 +120,12 @@ function Index(props) {
   return (
     <Container first={firstPage} back={backgroundColorChange}>
       { location?.pathname !== "/" && <Menu path={location?.pathname} /> }
+      <Loadmask />
       { alert && <Alert /> }
       { modal && <Modal /> }
       <Switch>
         <Route exact path="/"><FirstPage setHasToken={setHasToken} /></Route>
+        <Route path="/unauth"><UnAuthPage /></Route>
         {
           hasToken ? <>
             <Route path="/calendar"><CalendarPage /></Route>
@@ -130,7 +133,6 @@ function Index(props) {
             <Route path="/group"><GroupPage /></Route>
             <Route path="/etc"><EtcPage /></Route>
             <Route path="/develop/display"><Develop /></Route>
-            <Route path="/unauth"><UnAuthPage /></Route>
           </>
           :
           load &&

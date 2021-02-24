@@ -1,13 +1,25 @@
 import axios from 'axios';
-import { SERVER_URL, LOCALSTORAGE} from '../config';
+import { SERVER_URL, LOCALSTORAGE } from '../config';
 
-export const requestAxios = async ({ method = "get", url, data, headers, loadmask = false, isConsole = false }) => {
+const tokenReturn = () => {
+  const local = window.localStorage.getItem(LOCALSTORAGE);
+  const { token } = JSON.parse(local);
+  return token;
+};
+
+export const requestAxios = async ({ method = "get", url, data, headers, isConsole = false }) => {
   try {
+    const defaultToken = tokenReturn();
+
+    const defaultHeaders = {
+      "authorization": defaultToken
+    };
+
     const { data: result } = await axios({
       url: `${SERVER_URL}${url}`,
       method,
       data,
-      headers,
+      headers: headers || defaultHeaders,
       timeout: 10000
     });
 

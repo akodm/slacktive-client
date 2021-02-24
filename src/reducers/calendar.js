@@ -24,7 +24,16 @@ export const calendarEventReducer = (state = initState, action) => {
     case CALENDAR_DELETE:
       return {
         ...state,
-        schedules: state.schedules.filter((data) => { return data.id !== action.payload.id }),
+        schedules: state.schedules.filter((data) => { 
+          if(data.id !== action.payload.id) {
+            return true;
+          } else {
+            if(data.calendarId !== action.payload.calendarId) {
+              return true;
+            }
+          }
+          return false;
+        })
       }
     default:
       return state;

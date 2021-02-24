@@ -1,7 +1,6 @@
 import React, { useCallback, useState, useMemo } from 'react';
 import styled from 'styled-components';
-// import moment from 'moment';
-
+import moment from 'moment';
 import TextField from '@material-ui/core/TextField';
 import {
   KeyboardTimePicker,
@@ -218,31 +217,30 @@ const userImgs = [
 ];
 
 const Calendar = props => {
-  // 초기 밸류.
   const { 
     value = {
-      title: "",
-      contents: "",
       start: new Date(),
-      startTime: new Date(),
       end: new Date(),
-      endTime: new Date(),
-      startIsEnd: false,
-      category: "1",
       isAllDay: false,
-      participation: [],
-      participationText: "",
-      text: "",
+      type: "출장/미팅",
     }, 
     edit = false,
+    createSchedule,
+    updateSchedule,
   } = props;
   const [ values, setValues ] = useState(
     { 
+      title: "",
+      startTime: new Date(),
+      endTime: new Date(),
+      startIsEnd: false,
+      participation: [],
+      participationText: "",
+      text: "",
       ...value, 
-      category: "1",
-      participation: [] 
+      category: value.type || "출장/미팅",
     }
-  ); 
+  );
 
   // 헤더 텍스트.
   const headTextEdit = useMemo(() => edit ? "일정 수정하기" : "일정 등록하기", [edit]);
@@ -260,7 +258,7 @@ const Calendar = props => {
   // 날짜 관련 데이터 변경.
   const onChangeCalendarDate = useCallback((date, key) => {
     const items = { ...values };
-    items[key] = date;
+    items[key] = date
     setValues({ ...items });
   }, [values]);
 
@@ -318,6 +316,26 @@ const Calendar = props => {
     }, "/img/calendar/cardImg1.png");
   }, []);
 
+  // 등록 이벤트.
+  const submitEvent = useCallback(() => {
+    if(!values.title && values.category !== "휴가") {
+      window.alert("제목은 필수입니다.");
+      return;
+    }
+
+    if(!values.startIsEnd) {
+      const start = moment(values.start).format("YYYY-MM-DD ") + moment(values.startTime).format("HH:mm");
+      const end = moment(values.end).format("YYYY-MM-DD ") + moment(values.endTime).format("HH:mm");
+
+      if(moment(start).isAfter(end, 'minutes')) {
+        window.alert("날짜 설정이 잘못되었습니다.");
+        return;
+      }
+    }
+
+    edit ? updateSchedule(values) : createSchedule(values);
+  }, [createSchedule, updateSchedule, edit, values]);
+
   // 폼들.
   const forms = useMemo(() => [
     {
@@ -331,7 +349,7 @@ const Calendar = props => {
         fullWidth 
         value={values.title || ""} 
         onChange={onChangeCalendarModalValue} 
-        placeholder="어떤 일정인가요?" 
+        placeholder={values.category === "휴가" ? "병가, 오전반차, 휴가 등 내용만 적어주세요." : "어떤 일정인가요?"}
       />,
     },
     {
@@ -434,6 +452,7 @@ const Calendar = props => {
       component: <FormControl variant="outlined">
         <Select
           value={values.category}
+          disabled={edit}
           onChange={(e) => onChangeCalendarCategory(e, "category")}
           style={{
             width: "100%",
@@ -442,7 +461,7 @@ const Calendar = props => {
           }}
         >
           {categoryCircles.map((data, idx) => {
-            return <MenuItem key={idx} value={data.select}>
+            return <MenuItem key={idx} value={data.text}>
               <CategoryCircle colors={data.colors}></CategoryCircle>
               {data.text}
             </MenuItem>
@@ -464,7 +483,7 @@ const Calendar = props => {
           clearOnBlur
           clearOnEscape
           selectOnFocus
-          disabled={values.category === "2"}
+          disabled={values.category === "휴가"}
           onChange={onChangeCalendarParticipationAdd}
           getOptionLabel={(option) => option.name}
           renderInput={(params) => <TextField 
@@ -473,7 +492,7 @@ const Calendar = props => {
             id="participationText"
             value={values.participationText}
             onChange={onChangeCalendarModalValue}
-            style={{ paddingLeft: "22px", marginBottom: "17px" }}
+            style={{ paddingLeft: "27px", marginBottom: "17px" }}
           />}
         />
         <ParticipationLayout>
@@ -500,7 +519,7 @@ const Calendar = props => {
         id="text" 
         fullWidth 
         value={values.text || ""} 
-        disabled={values.category === "2"}
+        disabled={values.category === "휴가"}
         onChange={onChangeCalendarModalValue} 
         placeholder="자세한 내용은 무엇인가요?"
         multiline
@@ -510,6 +529,7 @@ const Calendar = props => {
       />,
     },
   ], [
+    edit,
     values, 
     participationImg,
     onChangeCalendarModalValue, 
@@ -540,7 +560,7 @@ const Calendar = props => {
           return <FormsComponent key={idx} {...data} />
         })}
         <Layout>
-          <SubmitButton onClick={() => console.log("submit")}>{submitTextEdit}</SubmitButton>
+          <SubmitButton onClick={submitEvent}>{submitTextEdit}</SubmitButton>
         </Layout>
       </Body>
     </Container>
