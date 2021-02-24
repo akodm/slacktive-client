@@ -69,11 +69,11 @@ function Index(props) {
 
       const localToken = window.localStorage.getItem(LOCALSTORAGE);
 
-      const token = JSON.parse(localToken);
+      const { token } = JSON.parse(localToken);
 
       const { data } = await axios.get(`${SERVER_URL}/users/token/check`, {
         headers: {
-          "authorization": token.token
+          "authorization": token
         }
       });
 
