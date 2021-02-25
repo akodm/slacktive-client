@@ -238,7 +238,7 @@ const Calendar = props => {
       participationText: "",
       text: "",
       ...value, 
-      category: /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/.test(value.type) ? "휴가" : "출장/미팅",
+      category: /.*(출장\/미팅|회의|생일|기타)/.test(value.type) ? value.type : "휴가",
     }
   );
 
