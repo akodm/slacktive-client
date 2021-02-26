@@ -124,10 +124,11 @@ const Develop = () => {
     tableDataTotal(year, month);
   }, [year, month, tableDataTotal]);
 
-  const modalOpenEvent = useCallback((workData) => {
+  const modalOpenEvent = useCallback((workData, holidays) => {
     openModalAction({
       contents: <DevelopModal 
         workData={workData}
+        holidays={holidays}
       />,
       ...modalOptions
     });
@@ -136,7 +137,7 @@ const Develop = () => {
   const TableBodyComponents = useCallback((props) => {
     const { data, realTotalOverTime, result, workData, workDataLength } = props;
     const overValue = realTotalOverTime - data.totalWorkTime;
-    return (result) ? <Tr onClick={() => modalOpenEvent(workData)}>
+    return (result) ? <Tr onClick={() => modalOpenEvent(workData, data.holidays)}>
       <Td>{data.name}</Td>
       <Td>{data.businessDayCount}</Td>
       <Td>{data.count}</Td>
