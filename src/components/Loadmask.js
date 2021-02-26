@@ -8,7 +8,7 @@ const Loadmask = () => {
 
   return (
     <Backdrop open={loadmask} style={{ zIndex: "3000" }}>
-      <CircularProgress color="primary" />
+      <CircularProgress color="inherit" />
     </Backdrop>
   );
 }

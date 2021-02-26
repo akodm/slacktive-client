@@ -90,6 +90,10 @@ const ParticipationLayout = styled.div`
   width: 100%;
   min-height: 60px;
   overflow-x: auto;
+
+  @media (max-width: 439px) {
+    justify-content: center;
+  }
 `;
 
 const ParticipationBox = styled.div`
