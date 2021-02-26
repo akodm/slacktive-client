@@ -1,9 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { useState, useEffect, useCallback } from 'react';
+import styled from 'styled-components';
 import { AnimatedWrapper } from '../components/PageAnim';
-import axios from 'axios';
-
-import { SERVER_URL } from '../config';
+import { requestAxios } from '../util/request';
+import { useDispatch } from 'react-redux';
+import { loadmaskOff, loadmaskOn  } from '../actions/loadmask';
+import { openModal } from '../actions/modal';
+import moment from 'moment';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import DevelopModal from '../components/Develop';
 
 const Container = styled.div`
   display: flex;
@@ -13,237 +18,180 @@ const Container = styled.div`
   width: 100%;
 `;
 
-const SelectContainer = styled.div`
+const Warpper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
-`;
-
-const SelectCards = styled.div`
-  display: flex;
   justify-content: center;
   align-items: center;
-  width: 70%;
-  height: 80px;
-  margin: 15px;
-  padding: 20px;
+  width: 100%;
+  padding: 30px;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  min-height: 100px;
+  margin: 20px;
   border-radius: 12px;
-  opacity: 0.7;
-  background-color: ${props => props.colors || "red"};
-  cursor: pointer;
-  transition-property: transform;
-  transition: ease 0.3s 0s;
-
-  &:hover {
-    transform: scale(1.05);
-  }
-`;
-
-const SelectText = styled.span`
-  font-family: 12LotteMartDream;
-  font-size: calc(10px + 1vmin);
-  font-weight: 500;
-  color: ${props => props.fontColor || "white"};
-`;
-
-const ModalContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  top: 0px;
-  right: 0px;
-  width: 100vw;
-  height: 100%;
-  position: absolute;
-  z-index: 1000;
-`;
-
-const ModalOverray = styled.div`
-  width: 100%;
-  height: 100%;
-  background-color: gray;
-  opacity: 0.6;
-  position: absolute;
-  z-index: 1001;
-`;
-
-const animModal = keyframes`
-  from {
-    margin-top: 100px;
-    opacity: 0;
-  }
-
-  to {
-    margin-top: 0px;
-    opacity: 1;
-  }
-`;
-
-const ModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 60%;
-  height: 500px;
-  padding: 20px;
-  border-radius: 8px;
   background-color: white;
-  position: absolute;
-  overflow: auto;
-  z-index: 1002;
-
-  animation-name: ${animModal};
-  animation-duration: 0.5s;
-
-  @media (max-width: 600px) {
-    width: 95%;
-    height: 95%;
-  }
+  overflow: hidden;
 `;
 
-const ModalText = styled.span`
+const Thead = styled.thead`
+  border-bottom: 1px solid gray;
+`;
+
+const Tbody = styled.tbody``;
+
+const Td = styled.td`
   font-family: 12LotteMartDream;
   font-size: calc(5px + 1vmin);
   font-weight: 500;
   color: black;
-`;
-
-const ModalTr = styled.tr`
+  padding: 10px;
+  font-family: 12LotteMartDream;
+  text-align: ${props => props.textAlign || "left"};
   border-bottom: 1px solid gray;
 `;
 
+const Tr = styled.tr`
+  cursor: pointer;
+  transition-property: color, background-color;
+  transition: ease 0.3s 0s;
+
+  &:hover {
+    background-color: rgba(200, 200, 200, 0.6);
+  }
+
+  &:active {
+    background-color: rgba(200, 200, 200, 0.6);
+  }
+`;
+
+const InputLayout = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const header = [
+  { text: "이름" },
+  { text: "이번 달 근로일 수" },
+  { text: "사용 휴가 갯수" },
+  { text: "실제 근로일 수" },
+  { text: "총 근로시간" },
+  { text: "슬랙 기준 근로시간" },
+  { text: "연장근로" },
+];
+
+const defaultYear = parseInt(moment(new Date()).format("YYYY"));
+const defaultMonth = parseInt(moment(new Date()).format("MM"));
+const modalOptions = { width: 570, height: 944, backdrop: true };
+
 const Develop = () => {
-  const [ times, setTimes ] = useState([]);         // 모든 출퇴근 내역.
-  const [ holidays, setHolidays ] = useState([]);   // 모든 휴가 내역.
-  const [ avgTimes, setAvgTimes ] = useState([]);   // 모든 사용자들의 평균 출퇴근 내역.
-  const [ overs, setOvers ] = useState([]);         // 모든 사용자들의 야근 내역.
-  const [ tardys, setTardys ] = useState([]);       // 모든 사용자들의 지각 내역.
-  const [ modal, setModal ] = useState(false);
-  const [ modalContent, setModalContent ] = useState([]);
+  const dispatch = useDispatch();
+  const [ year, setYear ] = useState(defaultYear);
+  const [ month, setMonth ] = useState(defaultMonth);
+  const [ data, setData ] = useState([]);
+  const loadmaskOnAction = useCallback(() => dispatch(loadmaskOn()), [dispatch]);
+  const loadmaskOffAction = useCallback(() => dispatch(loadmaskOff()), [dispatch]);
+  const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
 
-  const getApis = async () => {
+  const tableDataTotal = useCallback( async (year = defaultYear, month = defaultMonth) => {
     try {
-      let time = axios.get(`${SERVER_URL}/commute/all`);
-      let holiday = axios.get(`${SERVER_URL}/holiday/all`);
-      let over = axios.get(`${SERVER_URL}/commute/all/category?category=${"퇴근"}`);
-      let tardy = axios.get(`${SERVER_URL}/commute/all/category?category=${"지각"}`);
+      loadmaskOnAction();
 
-      await Promise.all([time, holiday, over, tardy]).then(result => {
-        time = result[0].data;
-        holiday = result[1].data;
-        over = result[2].data;
-        tardy = result[3].data;
+      const { response, result, message } = await requestAxios({
+        method: "get",
+        url: `/holiday/one/develop/work?year=${moment(year, "YYYY").format("YYYY")}&month=${moment(month, "MM").format("MM")}`
       });
 
-      if(time.err || holiday.err || over.err || tardy.err) {
-        throw new Error("api request failed: " + time.message + " " + holiday.message + " " + over.message + " " + tardy.message);
+      if(!result) {
+        throw new Error(message);
       }
 
-      setTimes(time.data);
-      setHolidays(holiday.data);
-      setAvgTimes([]);
-      setOvers(over.data);
-      setTardys(tardy.data);
+      loadmaskOffAction();
+      setData(response.data);
     } catch(err) {
-      window.alert("API failed: " + err.message || err);
-      return;
+      loadmaskOffAction();
+      console.log(err);
     }
-  };
+  }, [loadmaskOnAction, loadmaskOffAction]);
 
   useEffect(() => {
-    getApis();
-  }, []);
+    tableDataTotal();
+  }, [tableDataTotal]);
 
-  const onClickModalContent = useCallback((category) => {
-    switch(category) {
-      case "times": setModalContent(times); break;
-      case "holidays": setModalContent(holidays); break;
-      case "avgTimes": setModalContent(avgTimes); break;
-      case "overs": setModalContent(overs); break;
-      case "tardys": setModalContent(tardys); break;
-      default: break;
-    }
+  const submitEvent = useCallback(() => {
+    tableDataTotal(year, month);
+  }, [year, month, tableDataTotal]);
 
-    setModal(true);
-  }, [setModal, times, holidays, avgTimes, overs, tardys]);
-
-  const cards = useMemo(() => [
-    { id: "times", title: "현재까지 모든 출퇴근 기록", onClick: () => onClickModalContent("times"), colors: "red", fontColor: "white" },
-    { id: "holidays", title: "현재까지 모든 휴가 기록", onClick: () => onClickModalContent("holidays"), colors: "blue", fontColor: "white" },
-    { id: "avgTimes", title: "현재까지 모든 출퇴근 평균 기록 (사용 불가)", onClick: () => onClickModalContent("avgTimes"), colors: "yellow", fontColor: "black" },
-    { id: "overs", title: "현재까지 모든 야근 기록", onClick: () => onClickModalContent("overs"), colors: "green", fontColor: "white" },
-    { id: "tardys", title: "현재까지 모든 지각 기록", onClick: () => onClickModalContent("tardys"), colors: "purple", fontColor: "white" },
-  ], [onClickModalContent]);
-
-  const Cards = useCallback(() => {
-    return cards.map((data, idx) => {
-      return <SelectCards colors={data.colors} key={idx} onClick={data.onClick}>
-        <SelectText fontColor={data.fontColor}>{data.title}</SelectText>
-      </SelectCards>
+  const modalOpenEvent = useCallback((workData) => {
+    openModalAction({
+      contents: <DevelopModal 
+        workData={workData}
+      />,
+      ...modalOptions
     });
-  }, [cards]);
+  }, [openModalAction]);
+
+  const TableBodyComponents = useCallback((props) => {
+    const { data, realTotalOverTime, result, workData, workDataLength } = props;
+    const overValue = realTotalOverTime - data.totalWorkTime;
+    return (result) ? <Tr onClick={() => modalOpenEvent(workData)}>
+      <Td>{data.name}</Td>
+      <Td>{data.businessDayCount}</Td>
+      <Td>{data.count}</Td>
+      <Td>{data.totalWorkDayCount} / {workDataLength}</Td>
+      <Td>{data.totalWorkTime}</Td>
+      <Td>{realTotalOverTime}</Td>
+      <Td>{overValue >= 0 ? overValue.toFixed(2) : 0}</Td>
+    </Tr>
+    :
+    <Tr>
+      <Td colSpan="7">데이터를 가져오는데 실패하였습니다.</Td>
+    </Tr>
+  }, [modalOpenEvent]);
+
+  const onChangeDate = useCallback((e) => {
+    if(e.target.id === "year") {
+      if(e.target.value.length > 4) {
+        return;
+      }
+      setYear(e.target.value);
+    } else {
+      if(e.target.value.length > 2) {
+        return;
+      }
+      setMonth(e.target.value);
+    }
+  }, []);
 
   return (
     <AnimatedWrapper>
       <Container>
-        <SelectContainer>
-          <Cards />
-        </SelectContainer>
-        { modal && <DummyModal category={modalContent} close={setModal} /> }
+        <Warpper>
+          <InputLayout>
+            <Button style={{ margin: "10px", minWidth: "100px" }} variant="contained" color="primary" onClick={submitEvent}>호출</Button>
+            <TextField style={{ margin: "10px" }} type="number" id="year" onChange={onChangeDate} value={year} label="년" />
+            <TextField style={{ margin: "10px" }} type="number" id="month" onChange={onChangeDate} value={month} label="월" />
+          </InputLayout>
+          <Table>
+            <Thead>
+              <Tr>
+                {header.map((data, idx) => <Td key={idx}>{data.text}</Td>)}
+              </Tr>
+            </Thead>
+            <Tbody>
+              {
+                data[0] && data.map((values, idx) => {
+                  return <TableBodyComponents key={idx} {...values} />
+                })
+              }
+            </Tbody>
+          </Table>
+        </Warpper>
       </Container>
     </AnimatedWrapper>
   );
 }
-
-const DummyModal = (props) => {
-  const { category, close } = props;
-
-  const modalClose = useCallback(() => {
-    close && close(false);
-  }, [close]);
-
-  const overParse = useCallback((time) => {
-    const [ hour, minute ] = time.toString().split('.');
-
-    let parseMinute = 0;
-
-    if(minute) {
-      parseMinute = ((60 * parseInt(minute)) / 100).toFixed(0);
-    }
-    
-    const parseTime = `${parseInt(hour) > 0 ? `${hour}시간` : ""} ${parseMinute}분`;
-
-    return parseTime;
-  }, []);
-
-  return <ModalContainer onClick={modalClose}>
-    <ModalOverray />
-      <ModalContent>
-        <table>
-          <tbody>
-            {
-              category[0] ? category.map((data, idx) => {
-                return <ModalTr key={idx}>
-                  <td><ModalText>{data.id}</ModalText></td>
-                  <td><ModalText>{data.text}</ModalText></td>
-                  <td><ModalText>{data.user?.name}</ModalText></td>
-                  <td><ModalText>{data.slackTime || `${data.start} ~ ${data.end}`}</ModalText></td>
-                  { data.category ? <td><ModalText>{data.category}</ModalText></td> : <td></td> }
-                  { data.count ? <td><ModalText>{`${data.count}개 사용`}</ModalText></td> : <td></td> }
-                  { data.over ? <td><ModalText>{`${overParse(data.over)} 야근`}</ModalText></td> : <td></td> }
-                </ModalTr>
-              })
-              :
-              <tr>
-                <td>
-                  <ModalText>해당 기록이 없습니다.</ModalText>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </ModalContent>
-  </ModalContainer>
-};
 
 export default Develop;
