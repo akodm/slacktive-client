@@ -45,7 +45,6 @@ const Develop = props => {
       }
       {
         holidays[0] && holidays.map((data, idx) => {
-          console.log(data);
           return <Row key={idx}>
             <Text style={{ color: "gray" }}>휴가 내역 순번: {idx + 1}</Text>
             <Text style={{ color: "red" }}>{"ID: " + data.id + " / 분류: " + data.category + " / 텍스트: " + data.text}</Text>
