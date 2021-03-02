@@ -186,6 +186,9 @@ const Confirm = props => {
   // 초기 밸류.
   const { value: values, deleteSchedule, updatePopup, disabled = false } = props;
 
+  // 휴가관련 여부.
+  const holidayIf = useMemo(() => !/출장\/미팅|회의|생일|기타/.test(values.type), [values]);
+
   // 수정 팝업 오픈.
   const popupOpen = useCallback((data) => {
     updatePopup && updatePopup(data);
@@ -223,10 +226,10 @@ const Confirm = props => {
       component: <ViewText>
         {
           (values.startIsEnd || values.start === values.end) ?
-          formatDate(values.start) + formatTime(values.startTime)
+          formatDate(values.start) + (holidayIf ? "" : formatTime(values.startTime))
           : 
-          formatDate(values.start) + formatTime(values.startTime) + " ~ " +
-          formatDate(values.end) + formatTime(values.endTime)
+          formatDate(values.start) + (holidayIf ? "" : formatTime(values.startTime)) + " ~ " +
+          formatDate(values.end) + (holidayIf ? "" : formatTime(values.endTime))
         }
       </ViewText>
     },
@@ -273,7 +276,7 @@ const Confirm = props => {
         {values.text || "메모사항이 없습니다."}
       </ViewText>
     },
-  ], [values, participationImg]);
+  ], [values, participationImg, holidayIf]);
 
   // 뷰 컴포넌트.
   const ViewComponents = useCallback((option) => {
