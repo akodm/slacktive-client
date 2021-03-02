@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { AnimatedWrapper } from '../components/PageAnim';
 import { requestAxios } from '../util/request';
 import { useDispatch } from 'react-redux';
+import { CSVLink } from 'react-csv';
 import { loadmaskOff, loadmaskOn  } from '../actions/loadmask';
 import { openModal } from '../actions/modal';
 import moment from 'moment';
@@ -166,11 +167,38 @@ const Develop = () => {
     }
   }, []);
 
+  const excelDataExport = useMemo(() => {
+    return data.map(row => {
+      const overValue = row.realTotalOverTime - row.data.totalWorkTime;
+      return {
+        "이름": row.data.name,
+        "근로일 수": row.data.businessDayCount,
+        "휴가 갯수": row.data.count,
+        "총 근로일 수": `${row.data.totalWorkDayCount}`,
+        "실제 근무시간": row.data.totalWorkTime,
+        "슬랙 근무시간": row.realTotalOverTime,
+        "연장근로": overValue >= 0 ? overValue.toFixed(2) : 0
+      };
+    });
+  }, [data]);
+
   return (
     <AnimatedWrapper>
       <Container>
         <Warpper>
           <InputLayout>
+            {
+              data[0] &&
+              <Button style={{ margin: "10px", minWidth: "100px" }} variant="outlined" color="primary">
+                <CSVLink
+                  data={excelDataExport}
+                  filename={`cedar_${year}년_${month}월_근태내역_통계.csv`}
+                  target="_blank"
+                >
+                  Excel Export
+                </CSVLink>
+              </Button>
+            }
             <Button style={{ margin: "10px", minWidth: "100px" }} variant="contained" color="primary" onClick={submitEvent}>호출</Button>
             <TextField style={{ margin: "10px" }} type="number" id="year" onChange={onChangeDate} value={year} label="년" />
             <TextField style={{ margin: "10px" }} type="number" id="month" onChange={onChangeDate} value={month} label="월" />
