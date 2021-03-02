@@ -173,9 +173,9 @@ const Develop = () => {
       return {
         "이름": row.data.name,
         "근로일 수": row.data.businessDayCount,
-        "휴가 갯수": row.data.count,
+        "휴가 갯수 (병가 포함)": row.data.count,
         "총 근로일 수": `${row.data.totalWorkDayCount}`,
-        "실제 근무시간": row.data.totalWorkTime,
+        "총 근무시간": row.data.totalWorkTime,
         "슬랙 근무시간": row.realTotalOverTime,
         "연장근로": overValue >= 0 ? overValue.toFixed(2) : 0
       };
