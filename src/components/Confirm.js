@@ -168,8 +168,8 @@ const ExText = styled.div`
 
 // 유저 이미지들.
 const userImgs = [
-  { tag: "develop", img: "/img/calendar/cardImg1.png" },
-  { tag: "design", img: "/img/calendar/cardImg2.png" },
+  { tag: "개발", img: "/img/calendar/cardImg1.png" },
+  { tag: "디자인", img: "/img/calendar/cardImg2.png" },
 ];
 
 // 날짜 포맷.
