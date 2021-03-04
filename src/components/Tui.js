@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 import ChevronLeftOutlinedIcon from '@material-ui/icons/ChevronLeftOutlined';
 import ChevronRightOutlinedIcon from '@material-ui/icons/ChevronRightOutlined';
@@ -10,7 +10,7 @@ import { openModal, closeModal } from '../actions/modal';
 import CalendarModal from '../components/Calendar';
 import ConfirmModal from '../components/Confirm';
 import { openAlert } from '../actions/alert';
-import { calendarInit, calendarDelete, calendarAdd, calendarUpdate } from '../actions/calendar';
+import { calendarDelete, calendarAdd, calendarUpdate } from '../actions/calendar';
 import { loadmaskOff, loadmaskOn } from '../actions/loadmask';
 import { requestAxios } from '../util/request';
 import { LOCALSTORAGE, HOLIDAY_CHANNEL } from '../config';
@@ -95,7 +95,6 @@ const Tui = () => {
   const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
   const closeModalAction = useCallback(() => dispatch(closeModal()), [dispatch]);
   const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
-  const calendarInitAction = useCallback((payload) => dispatch(calendarInit(payload)), [dispatch]);
   const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
   const calendarUpdateAction = useCallback((payload) => dispatch(calendarUpdate(payload)), [dispatch]);
   const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
@@ -144,41 +143,6 @@ const Tui = () => {
       };
     });
   }, [bgColorParser]);
-
-  // 초기 캘린더 스케쥴 데이터 이닛.
-  const initSchedule = useCallback( async () => {
-    try {
-      const { response, result, status, message } = await requestAxios({ method: "get", url: `/holiday/all` });
-      const { response: taskResponse, result: taskResult, status: taskStatus, message: taskMessage } = await requestAxios({ method: "get", url: `/task/all` });
-
-      if(!result || status === 500 || !taskResult || taskStatus === 500) {
-        throw new Error(message || taskMessage);
-      }
-
-      const parseItemTask = scheduleParser(taskResponse.data, "일정");
-      const parseItem = scheduleParser(response.data, "휴가");
-
-      const newItems = [];
-      
-      parseItemTask.forEach(data => {
-        newItems.push({ ...data });
-      });
-
-      parseItem.forEach(data => {
-        newItems.push({ ...data });
-      });
-
-      calendarInitAction(newItems);
-    } catch(err) {
-      console.log(err);
-      window.alert(err.message || err);
-    }
-  }, [calendarInitAction, scheduleParser]);
-
-  // 초기 캘린더 데이터 이펙트.
-  useEffect(() => {
-    initSchedule();
-  }, [initSchedule]);
 
   // 월 변경.
   const monthChange = useCallback((type) => {

@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
+import { useSelector } from 'react-redux';
 import TextField from '@material-ui/core/TextField';
 import {
   KeyboardTimePicker,
@@ -191,16 +192,6 @@ const ParticipationName = styled.span`
   color: #000000;
 `;
 
-const dummyMembers = [
-  { slackId: "aaa", name: "Ko yuri A", tag: "develop" },
-  { slackId: "bbb", name: "Ko yuri B", tag: "design" },
-  { slackId: "ccc", name: "Ko C", tag: "manager" },
-  { slackId: "ddd", name: "Ko D", tag: "develop" },
-  { slackId: "eee", name: "yuri E", tag: "develop" },
-  { slackId: "fff", name: "yuri F", tag: "design" },
-  { slackId: "ggg", name: "yuri Gold lllmal.", tag: "design" },
-];
-
 // 카테고리의 내용들.
 const categoryCircles = [
   { select: "1", text: "출장/미팅", colors: "#d6ff98" },
@@ -212,8 +203,8 @@ const categoryCircles = [
 
 // 유저 이미지들.
 const userImgs = [
-  { tag: "develop", img: "/img/calendar/cardImg1.png" },
-  { tag: "design", img: "/img/calendar/cardImg2.png" },
+  { tag: "개발", img: "/img/calendar/cardImg1.png" },
+  { tag: "디자인", img: "/img/calendar/cardImg2.png" },
 ];
 
 const Calendar = props => {
@@ -241,6 +232,7 @@ const Calendar = props => {
       category: /.*(출장\/미팅|회의|생일|기타)/.test(value.type) ? value.type : "휴가",
     }
   );
+  const { users } = useSelector(state => state.usersInitReducer);
 
   // 헤더 텍스트.
   const headTextEdit = useMemo(() => edit ? "일정 수정하기" : "일정 등록하기", [edit]);
@@ -479,7 +471,7 @@ const Calendar = props => {
       component: <>
         <TextFieldIcon />
         <FormAutocomplete 
-          options={dummyMembers}
+          options={users}
           clearOnBlur
           clearOnEscape
           selectOnFocus
@@ -529,6 +521,7 @@ const Calendar = props => {
       />,
     },
   ], [
+    users,
     edit,
     values, 
     participationImg,

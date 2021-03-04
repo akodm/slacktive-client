@@ -1,7 +1,8 @@
-import { CALENDAR_INIT, CALENDAR_ADD, CALENDAR_UPDATE, CALENDAR_DELETE } from '../actions/calendar';
+import { CALENDAR_INIT, CALENDAR_ADD, CALENDAR_UPDATE, CALENDAR_DELETE, USERS_INIT } from '../actions/calendar';
 
 const initState = {
   schedules: [],
+  users: [],
 };
 
 export const calendarEventReducer = (state = initState, action) => {
@@ -38,4 +39,16 @@ export const calendarEventReducer = (state = initState, action) => {
     default:
       return state;
   }
-}
+};
+
+export const usersInitReducer = (state = initState, action) => {
+  switch(action.type) {
+    case USERS_INIT:
+      return {
+        ...state,
+        users: action.payload
+      }
+    default:
+      return state;
+  }
+};
