@@ -1,5 +1,5 @@
 # Cedar Slacktive Repo.
-> current version 0.1.3  
+> current version 0.1.6  
 ---
 ### Version History.
 > release update. 0.1.2
@@ -33,4 +33,11 @@
 > update. 0.1.5.1
 ```md
 - 통계 데이터를 엑셀로 출력하도록 작업.
+```
+
+> update. 0.1.6
+```md
+- 캘린더 페이지에 본인 정보로 출력되도록 작업.
+- 통계 데이터 요구사항 반영.
+- 지각자, 휴가자 데이터 표시 작업.
 ```
