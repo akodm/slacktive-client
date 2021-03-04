@@ -2,7 +2,6 @@ import React, { useMemo, useEffect, useCallback, useState } from 'react';
 import { Route, Switch, useLocation, Redirect } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import { LOCALSTORAGE, SERVER_URL } from '../config';
-import moment from 'moment';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { requestAxios } from '../util/request';
