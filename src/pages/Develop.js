@@ -136,8 +136,7 @@ const Develop = () => {
   }, [openModalAction]);
 
   const TableBodyComponents = useCallback((props) => {
-    const { data, realTotalOverTime, result, workData, workDataLength } = props;
-    const overValue = realTotalOverTime - data.totalWorkTime;
+    const { data, realTotalOverTime, result, workData, workDataLength, overTimeValue } = props;
     return (result) ? <Tr onClick={() => modalOpenEvent(workData, data.holidays)}>
       <Td>{data.name}</Td>
       <Td>{data.businessDayCount}</Td>
@@ -145,7 +144,7 @@ const Develop = () => {
       <Td>{data.totalWorkDayCount} / {workDataLength}</Td>
       <Td>{data.totalWorkTime}</Td>
       <Td>{realTotalOverTime}</Td>
-      <Td>{overValue >= 0 ? overValue.toFixed(2) : 0}</Td>
+      <Td>{overTimeValue}</Td>
     </Tr>
     :
     <Tr>
