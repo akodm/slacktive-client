@@ -168,15 +168,14 @@ const Develop = () => {
 
   const excelDataExport = useMemo(() => {
     return data.map(row => {
-      const overValue = row.realTotalOverTime - row.data.totalWorkTime;
       return {
         "이름": row.data.name,
         "근로일 수": row.data.businessDayCount,
         "휴가 갯수 (병가 포함)": row.data.count,
-        "총 근로일 수": `${row.data.totalWorkDayCount}`,
+        "총 근로일 수": `${row.data.totalWorkDayCount} / ${workDataLength}`,
         "총 근무시간": row.data.totalWorkTime,
         "슬랙 근무시간": row.realTotalOverTime,
-        "연장근로": overValue >= 0 ? overValue.toFixed(2) : 0
+        "연장근로": overTimeValue
       };
     });
   }, [data]);
