@@ -172,10 +172,10 @@ const Develop = () => {
         "이름": row.data.name,
         "근로일 수": row.data.businessDayCount,
         "휴가 갯수 (병가 포함)": row.data.count,
-        "총 근로일 수": `${row.data.totalWorkDayCount} / ${workDataLength}`,
+        "총 근로일 수": `${row.data.totalWorkDayCount} / ${row.workDataLength}`,
         "총 근무시간": row.data.totalWorkTime,
         "슬랙 근무시간": row.realTotalOverTime,
-        "연장근로": overTimeValue
+        "연장근로": row.overTimeValue
       };
     });
   }, [data]);
