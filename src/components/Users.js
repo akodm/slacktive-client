@@ -49,8 +49,6 @@ const Box = styled.div`
   text-align: left;
   word-break: keep-all;
   margin: 5px;
-  border: 1px solid rgba(200, 200, 200, 0.6);
-  border-radius: 8px;
 `;
 
 const Text = styled.span`
