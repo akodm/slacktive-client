@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { requestAxios } from '../util/request';
 import { calendarInit, usersInit } from '../actions/calendar';
 import { slackLogin } from '../actions/login';
+import { mypageDataInit } from '../actions/mypage';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
@@ -51,11 +52,13 @@ function Index(props) {
   const location = useLocation();
   const { alert } = useSelector(state => state.alertOpenCloseReducer);
   const { modal } = useSelector(state => state.modalOpenCloseReducer);
+  const { user } = useSelector(state => state.slackLoginReducer);
   const [ hasToken, setHasToken ] = useState(false); 
   const [ load, setLoad ] = useState(false);
   const calendarInitAction = useCallback((payload) => dispatch(calendarInit(payload)), [dispatch]);
   const usersInitAction = useCallback((payload) => dispatch(usersInit(payload)), [dispatch]);
   const slackLoginAction = useCallback((payload) => dispatch(slackLogin(payload)), [dispatch]);
+  const mypageDataInitAction = useCallback((payload) => dispatch(mypageDataInit(payload)), [dispatch]);
 
   // 배경 설정.
   const backgroundColorChange = useMemo(() => {
@@ -246,6 +249,31 @@ function Index(props) {
     hasToken && initSchedule();
     hasToken && allUserInit();
   }, [hasToken, initSchedule, allUserInit]);
+
+  // 마이페이지 초기 데이터 가져오기.
+  const mypageDataInitEvent = useCallback( async () => {
+    try {
+      const holidays = await requestAxios({ method: "get", url: `/holiday/one/holiday` });
+      const tardys = await requestAxios({ method: "get", url: `/commute/one/tardy` });
+
+      if(!holidays.result || holidays.status === 500 || !tardys.result || tardys.status === 500) {
+        throw new Error(holidays.message || tardys.message);
+      }
+
+      mypageDataInitAction({ 
+        holidays: holidays.response.data, 
+        tardys: tardys.response.data, 
+      });
+    } catch(err) {
+      console.log(err);
+      window.alert(err.message || err);
+    }
+  }, [mypageDataInitAction]);
+
+  // 토큰 처리 후 마이페이지 데이터 이닛.
+  useEffect(() => {
+    hasToken && user && mypageDataInitEvent(user);
+  }, [hasToken, mypageDataInitEvent, user]);
   
   return (
     <Container first={firstPage} back={backgroundColorChange}>

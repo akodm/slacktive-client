@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { AnimatedWrapper } from '../components/PageAnim';
 import moment from 'moment';
+import { useSelector } from 'react-redux';
 
 import Toggle from '../components/Toggle';
 import Card from '../components/Card';
@@ -320,40 +321,67 @@ const imgCountArr = [
   { add: true, img: '/img/mypage/full-ex.png' },
 ];
 const holidayTagArr = [
-  { cate: "반차", img: "/img/mypage/holiday-3.png" },
-  { cate: "휴가", img: "/img/mypage/holiday-2.png" },
-  { cate: "대휴", img: "/img/mypage/holiday-1.png" },
-  { cate: "병가", img: "/img/mypage/holiday-0.png" },
+  { category: "반차", img: "/img/mypage/holiday-3.png" },
+  { category: "휴가", img: "/img/mypage/holiday-2.png" },
+  { category: "대휴", img: "/img/mypage/holiday-1.png" },
+  { category: "병가", img: "/img/mypage/holiday-0.png" },
 ];
-
 const dummyHoldayTotalCount = 20;
-const dummyHolidayRestCount = 15;
-const dummyHolidayUseCount = 5;
-const dummyHolidayAddCount = 1;
-const dummyTardyValue = 0;
+
 const dummyAvgValue = new Date();
 const dummyAttenValue = 20;
 const dummyOverValue = 1;
-const dummyHolidayHistory = [
-  { id: 0, cate: "반차", start: "2021-01-03", end: "2021-01-03" },
-  { id: 1, cate: "휴가", start: "2021-01-01", end: "2021-03-02" },
-  { id: 2, cate: "대휴", start: new Date(), end: new Date() },
-  { id: 3, cate: "병가", start: new Date(), end: new Date() },
-  { id: 4, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 5, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 6, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 7, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 8, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 9, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 10, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 11, cate: "휴가", start: new Date(), end: new Date() },
-  { id: 12, cate: "휴가", start: new Date(), end: new Date() },
-];
-
 
 function MyPage(props) {
   const [ toggle, setToggle ] = useState(false);
   const [ itemPerPage, setItemPerPage ] = useState(5);
+  const { 
+    holidays = {
+      extraCount: 0,
+      list: [],
+      replaceCount: 0,
+      toMonthCount: 0,
+      totalCount: 0
+    }, 
+    tardys = {
+      currentMonthCount: 0,
+      currentYearCount: 0,
+      currentYearDataList: [],
+      previousMonthCount: 0,
+      previousYearCount: 0,
+      previousYearDataList: []
+    }
+  } = useSelector(state => state.mypageDataInitReducer);
+
+  // 휴가 관련 파싱 처리.
+  const restHolidayCount = useMemo(() => { return dummyHoldayTotalCount - holidays.totalCount; }, [holidays]);
+  
+  /**
+   * 데이터들은 전년도 기준도 가능해야 함.
+   * toggle ? 연도별 : 월별
+   */
+
+  // 지각 관련 파싱 처리.
+  const tardyDiff = useMemo(() => { 
+    const diff = ((toggle ? tardys.previousYearCount : tardys.previousMonthCount) - (toggle ? tardys.currentYearCount : tardys.currentMonthCount)) || 0;
+
+    return `지난${toggle ? "해" : "달"}보다 ${diff > 0 ? diff : diff * -1}회 ${diff > 0 ? "감소" : "증가"}`;
+  }, [tardys, toggle]);
+
+  const tardyValue = useMemo(() => {
+    const value = (toggle ? tardys.currentYearCount : tardys.currentMonthCount) || 0;
+    
+    return value;
+  }, [tardys, toggle]);
+
+  // 평균 시간 관련 파싱 처리.
+
+
+  // 출근 관련 파싱 처리.
+
+
+  // 야근 관련 파싱 처리.
+
 
   const itemPerPagePlus = useCallback(() => {
     const newCount = itemPerPage + plusValue;
@@ -362,20 +390,20 @@ function MyPage(props) {
 
   const HoldayCountText = useCallback(() => {
     return <CardCountText>
-      <CardCountRest>{dummyHolidayRestCount}</CardCountRest>
-      { dummyHolidayAddCount && <CardCountAdd>{`(+${dummyHolidayAddCount})`}</CardCountAdd> }
+      <CardCountRest>{restHolidayCount || 0}</CardCountRest>
+      { holidays.replaceCount && <CardCountAdd>{`(+${holidays.replaceCount})`}</CardCountAdd> }
       <CardCountTotal>/{dummyHoldayTotalCount}</CardCountTotal>
       <CardCountUnderLine />
     </CardCountText>
-  }, []);
+  }, [restHolidayCount, holidays]);
 
   const InfoText = useCallback(() => {
     return <CardInfoText>
-      {dummyHolidayUseCount}{infoTextFirst}
-      <CardInfoEx>{dummyHolidayRestCount}번 {dummyHolidayAddCount && `(+${dummyHolidayAddCount}) `}</CardInfoEx>
+      {holidays.totalCount}{infoTextFirst}
+      <CardInfoEx>{restHolidayCount || 0}번 {holidays.replaceCount && `(+${holidays.replaceCount}) `}</CardInfoEx>
       {infoTextLast}
     </CardInfoText>
-  }, []);
+  }, [restHolidayCount, holidays]);
 
   const imageSrcGet = useMemo(() => {
     let src = "/img/mypage/full.png";
@@ -384,56 +412,66 @@ function MyPage(props) {
         src = imgCountArr[i].img;
         break;
       }
-      if(dummyHolidayRestCount >= imgCountArr[i].count) {
+      if(restHolidayCount >= imgCountArr[i].count) {
         src = imgCountArr[i].img;
         break;
       }
     }
     return src;
-  }, []);
+  }, [restHolidayCount]);
 
   const toggleFunction = useCallback(() => {
     setToggle(!toggle);
   }, [toggle]);
 
   const cardUrl = useMemo(() => [
-    { id: 0, cate: "tardy", url: "/img/mypage/card-1.png", title: "지각 횟수", value: dummyTardyValue, info: "지난달보다 2회 감소", src: "/img/mypage/card-run.png", onClick: () => console.log("1") },
-    { id: 1, cate: "avg", url: "/img/mypage/card-2.png", title: "평균 출근시간", value: dummyAvgValue, info: "지난달보다 20분 빠름", src: "/img/mypage/card-clock.png", onClick: () => console.log("2") },
-    { id: 2, cate: "atten", url: "/img/mypage/card-3.png", title: "출근 일수", value: dummyAttenValue, info: "이번달 연차 0.5개 사용", src: "/img/mypage/card-work.png", onClick: () => console.log("3") },
-    { id: 3, cate: "over", url: "/img/mypage/card-4.png", title: "야근 일수", value: dummyOverValue, info: "지난달보다 1회 증가", src: "/img/mypage/card-over.png", onClick: () => console.log("4") },
-  ], []);
+    { id: 0, category: "tardy", url: "/img/mypage/card-1.png", title: "지각 횟수", value: tardyValue, info: tardyDiff, src: "/img/mypage/card-run.png", onClick: () => console.log(tardys.currentYearDataList) },
+    { id: 1, category: "avg", url: "/img/mypage/card-2.png", title: "평균 출근시간", value: dummyAvgValue, info: "지난달보다 20분 빠름", src: "/img/mypage/card-clock.png", onClick: () => console.log("2") },
+    { id: 2, category: "atten", url: "/img/mypage/card-3.png", title: "출근 일수", value: dummyAttenValue, info: `이번달 연차 ${holidays.toMonthCount || 0}개 사용`, src: "/img/mypage/card-work.png", onClick: () => console.log("3") },
+    { id: 3, category: "over", url: "/img/mypage/card-4.png", title: "야근 일수", value: dummyOverValue, info: "지난달보다 1회 증가", src: "/img/mypage/card-over.png", onClick: () => console.log("4") },
+  ], [
+    holidays, 
+    tardys, tardyDiff, tardyValue
+  ]);
 
   // const CardDataParser = useCallback(() => {
   //   // ... cardUrl data parse..
   // }, []);
 
   const HolidayHistoryParser = useCallback(() => {
-    return dummyHolidayHistory.map((data, idx) => {
+    return holidays.list ? holidays.list.map((data, idx) => {
       let tag = holidayTagArr.reduce((first, value) => {
-        if(value.cate === data.cate) {
+        if(value.category === data.category) {
           return value.img;
         }
         return first;
       }, "/img/mypage/holiday-2.png");
+
       let schedule = "";
       let time = "";
       let use = false;
+      let half = /반차/.test(data.category);
+
       if(moment(data.start).isAfter(new Date())) {
         schedule = "[예정] ";
         use = true;
       }
+      
       if(moment(data.start).isSame(data.end)) {
         time = moment(data.start).format("YYYY. M. D (ddd)");
       } else {
         time = `${moment(data.start).format("YYYY. M. D (ddd)")} ~ ${moment(data.end).format("M. D (ddd)")}`;
       }
+      
       return itemPerPage > idx && 
       <HolidayTagLayout key={idx}>
         <HolidayTagImg src={tag} alt="img"/>
-        <HolidayTagText use={use}>{schedule}{time}</HolidayTagText> 
+        <HolidayTagText use={!use}>{schedule}{half && " 반차 "}{time}</HolidayTagText> 
       </HolidayTagLayout>
-    });
-  }, [itemPerPage]);
+    })
+    :
+    null;
+  }, [itemPerPage, holidays]);
 
   return (
     <AnimatedWrapper>
@@ -450,8 +488,8 @@ function MyPage(props) {
               <CardImgBox>
                 <CardImg src={imageSrcGet} alt="img"/>
                 <ImgSideCount>
-                  { dummyHolidayAddCount && <ImgSideCountAdd>{`+${dummyHolidayAddCount}`}</ImgSideCountAdd> }
-                  <ImgSideCountRest>{dummyHolidayRestCount}</ImgSideCountRest>
+                  { holidays.replaceCount && <ImgSideCountAdd>{`+${holidays.replaceCount}`}</ImgSideCountAdd> }
+                  <ImgSideCountRest>{restHolidayCount || 0}</ImgSideCountRest>
                 </ImgSideCount>
               </CardImgBox>
             </CardWrapper>
@@ -482,7 +520,7 @@ function MyPage(props) {
             <HolidayText>{holidayText}</HolidayText>
           </HolidayTextLayout>
           <HolidayHistoryParser />
-          { itemPerPage < dummyHolidayHistory.length && <AddViewText onClick={itemPerPagePlus}>더 보기</AddViewText> }
+          { itemPerPage < holidays.list?.length && <AddViewText onClick={itemPerPagePlus}>더 보기</AddViewText> }
         </HolidayContainer>
       </Container>
     </AnimatedWrapper>

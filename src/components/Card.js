@@ -26,7 +26,7 @@ const Container = styled.div`
   }
 `;
 
-const Title = styled.span`
+const TitleText = styled.span`
   font-family: NanumBarunGothic;
   font-size: 18px;
   color: #ffffff;
@@ -43,7 +43,7 @@ const Content = styled.span`
   margin-left: 30px;
 `;
 
-const Info = styled.span`
+const InfoText = styled.span`
   font-family: NanumBarunGothic;
   font-size: 18px;
   font-weight: normal;
@@ -71,7 +71,7 @@ const SrcImg = styled.img`
 `;
 
 function Card(props) {
-  const { cate, url = "/img/mypage/card-1.png", title, value, info, src, onClick } = props;
+  const { category, url = "/img/mypage/card-1.png", title, value, info, src, onClick } = props;
   
   const onClickFunction = useCallback(() => {
     onClick && onClick();
@@ -79,18 +79,18 @@ function Card(props) {
 
   const valueParser = useMemo(() => {
     let result = value;
-    switch(cate) {
+    switch(category) {
       case "avg": result = moment(value, "H:mm:ss").format("H시 mm분"); break;
       default: result = `${value}일`; break; 
     }
     return result;
-  }, [value, cate]);
+  }, [value, category]);
 
   return (
     <Container url={url} onClick={onClickFunction}>
-      <Title>{title}</Title>
+      <TitleText>{title}</TitleText>
       <Content>{value ? valueParser : "없음"}</Content>
-      <Info>{info}</Info>
+      <InfoText>{info}</InfoText>
       <SrcImg src={src} alt="img"/>
       <StarImg src="/img/mypage/star.png" alt="star"/>
     </Container>
