@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
-import { AnimatedWrapper } from '../components/PageAnim';
 import moment from 'moment';
-import { useSelector } from 'react-redux';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { AnimatedWrapper } from '../components/PageAnim';
+import { openModal } from '../actions/modal';
+import ListModal from '../components/Mypage';
 import Toggle from '../components/Toggle';
 import Card from '../components/Card';
 
@@ -326,13 +327,13 @@ const holidayTagArr = [
   { category: "대휴", img: "/img/mypage/holiday-1.png" },
   { category: "병가", img: "/img/mypage/holiday-0.png" },
 ];
+const calendarModalOptions = { width: 570, height: 936, backdrop: true };
+
 const dummyHoldayTotalCount = 20;
-
 const dummyAvgValue = new Date();
-const dummyAttenValue = 20;
-const dummyOverValue = 1;
 
-function MyPage(props) {
+const MyPage = props => {
+  const dispatch = useDispatch();
   const [ toggle, setToggle ] = useState(false);
   const [ itemPerPage, setItemPerPage ] = useState(5);
   const { 
@@ -349,39 +350,74 @@ function MyPage(props) {
       currentYearDataList: [],
       previousMonthCount: 0,
       previousYearCount: 0,
-      previousYearDataList: []
+      previousYearDataList: [],
+      monthDataList: [],
+    },
+    attens = {
+      currentMonthCount: 0,
+      currentYearCount: 0,
+      currentYearDataList: [],
+      monthDataList: [],
+    },
+    overs = {
+      currentMonthCount: 0,
+      currentYearCount: 0,
+      currentYearDataList: [],
+      previousMonthCount: 0,
+      previousYearCount: 0,
+      previousYearDataList: [],
     }
   } = useSelector(state => state.mypageDataInitReducer);
+  const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
+
+  const cardClickOpenModal = useCallback((props, category) => {
+    const list = (props.monthDataList || props.currentYearDataList) || [];
+
+    openModalAction({
+      contents: <ListModal 
+        list={list}
+        category={category}
+      />,
+      ...calendarModalOptions
+    });
+  }, [openModalAction]);
 
   // 휴가 관련 파싱 처리.
   const restHolidayCount = useMemo(() => { return dummyHoldayTotalCount - holidays.totalCount; }, [holidays]);
   
+  const cardHolidayCount = useMemo(() => {
+    const result = (toggle ? holidays.totalCount : holidays.toMonthCount) || 0;
+    const text = toggle ? "해" : "달";
+    return `이번${text} 연차 ${result || 0}개 사용`;
+  }, [toggle, holidays]);
+
   /**
    * 데이터들은 전년도 기준도 가능해야 함.
    * toggle ? 연도별 : 월별
    */
 
-  // 지각 관련 파싱 처리.
-  const tardyDiff = useMemo(() => { 
-    const diff = ((toggle ? tardys.previousYearCount : tardys.previousMonthCount) - (toggle ? tardys.currentYearCount : tardys.currentMonthCount)) || 0;
+  // 지각과 야근 관련 파싱 처리.
+  const dataDiff = useCallback((data) => { 
+    const diff = ((toggle ? data.previousYearCount : data.previousMonthCount) - (toggle ? data.currentYearCount : data.currentMonthCount)) || 0;
 
     return `지난${toggle ? "해" : "달"}보다 ${diff > 0 ? diff : diff * -1}회 ${diff > 0 ? "감소" : "증가"}`;
-  }, [tardys, toggle]);
+  }, [toggle]);
 
-  const tardyValue = useMemo(() => {
-    const value = (toggle ? tardys.currentYearCount : tardys.currentMonthCount) || 0;
+  const cardValue = useCallback((yearCount, monthCount) => {
+    const value = (toggle ? yearCount : monthCount) || 0;
     
     return value;
-  }, [tardys, toggle]);
+  }, [toggle]);
 
   // 평균 시간 관련 파싱 처리.
-
+  
 
   // 출근 관련 파싱 처리.
+  const cardValueAtten = useMemo(() => {
+    const value = (toggle ? attens.currentYearCount : attens.currentMonthCount) || 0;
 
-
-  // 야근 관련 파싱 처리.
-
+    return value;
+  }, [attens, toggle]);
 
   const itemPerPagePlus = useCallback(() => {
     const newCount = itemPerPage + plusValue;
@@ -425,18 +461,57 @@ function MyPage(props) {
   }, [toggle]);
 
   const cardUrl = useMemo(() => [
-    { id: 0, category: "tardy", url: "/img/mypage/card-1.png", title: "지각 횟수", value: tardyValue, info: tardyDiff, src: "/img/mypage/card-run.png", onClick: () => console.log(tardys.currentYearDataList) },
-    { id: 1, category: "avg", url: "/img/mypage/card-2.png", title: "평균 출근시간", value: dummyAvgValue, info: "지난달보다 20분 빠름", src: "/img/mypage/card-clock.png", onClick: () => console.log("2") },
-    { id: 2, category: "atten", url: "/img/mypage/card-3.png", title: "출근 일수", value: dummyAttenValue, info: `이번달 연차 ${holidays.toMonthCount || 0}개 사용`, src: "/img/mypage/card-work.png", onClick: () => console.log("3") },
-    { id: 3, category: "over", url: "/img/mypage/card-4.png", title: "야근 일수", value: dummyOverValue, info: "지난달보다 1회 증가", src: "/img/mypage/card-over.png", onClick: () => console.log("4") },
+    { 
+      id: 0, 
+      category: "tardy", 
+      url: "/img/mypage/card-1.png", 
+      title: "지각 횟수", 
+      value: cardValue(tardys.currentYearCount, tardys.currentMonthCount), 
+      info: dataDiff(tardys), 
+      src: "/img/mypage/card-run.png", 
+      onClick: () => cardClickOpenModal(tardys, "tardy") 
+    },
+    { 
+      id: 1, 
+      category: "avg", 
+      url: "/img/mypage/card-2.png", 
+      title: "평균 출근시간", 
+      value: dummyAvgValue, 
+      info: "지난달보다 20분 빠름", 
+      src: "/img/mypage/card-clock.png", 
+      onClick: () => console.log("2", "avg") 
+    },
+    { 
+      id: 2, 
+      category: 
+      "atten", 
+      url: "/img/mypage/card-3.png", 
+      title: "출근 일수", 
+      value: cardValueAtten, 
+      info: cardHolidayCount, 
+      src: "/img/mypage/card-work.png", 
+      onClick: () => cardClickOpenModal(attens, "atten") 
+    },
+    { 
+      id: 3, 
+      category: "over", 
+      url: "/img/mypage/card-4.png", 
+      title: "야근 일수", 
+      value: cardValue(overs.currentYearCount, overs.currentMonthCount), 
+      info: dataDiff(overs), 
+      src: "/img/mypage/card-over.png", 
+      onClick: () => cardClickOpenModal(overs, "over") 
+    },
   ], [
-    holidays, 
-    tardys, tardyDiff, tardyValue
+    cardHolidayCount,
+    cardValue,
+    dataDiff,
+    tardys,
+    attens,
+    cardValueAtten,
+    overs,
+    cardClickOpenModal
   ]);
-
-  // const CardDataParser = useCallback(() => {
-  //   // ... cardUrl data parse..
-  // }, []);
 
   const HolidayHistoryParser = useCallback(() => {
     return holidays.list ? holidays.list.map((data, idx) => {

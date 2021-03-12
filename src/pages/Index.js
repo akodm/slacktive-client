@@ -253,16 +253,27 @@ function Index(props) {
   // 마이페이지 초기 데이터 가져오기.
   const mypageDataInitEvent = useCallback( async () => {
     try {
-      const holidays = await requestAxios({ method: "get", url: `/holiday/one/holiday` });
-      const tardys = await requestAxios({ method: "get", url: `/commute/one/tardy` });
+      let holidays = requestAxios({ method: "get", url: `/holiday/one/holiday` });
+      let tardys = requestAxios({ method: "get", url: `/commute/one/tardy` });
+      let overs = requestAxios({ method: "get", url: `/commute/one/over` });
+      let attens = requestAxios({ method: "get", url: `/commute/one/atten` });
 
-      if(!holidays.result || holidays.status === 500 || !tardys.result || tardys.status === 500) {
-        throw new Error(holidays.message || tardys.message);
+      await Promise.all([holidays, tardys, overs, attens]).then(result => {
+        holidays = result[0];
+        tardys = result[1];
+        overs = result[2];
+        attens = result[3];
+      });
+
+      if(!holidays.result || holidays.status === 500 || !tardys.result || tardys.status === 500 || !overs.result || overs.status === 500 || !attens.result || attens.status === 500) {
+        throw new Error(holidays.message || tardys.message || overs.message || attens.message);
       }
 
       mypageDataInitAction({ 
         holidays: holidays.response.data, 
         tardys: tardys.response.data, 
+        overs: overs.response.data,
+        attens: attens.response.data,
       });
     } catch(err) {
       console.log(err);
