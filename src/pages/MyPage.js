@@ -330,7 +330,6 @@ const holidayTagArr = [
 const calendarModalOptions = { width: 570, height: 936, backdrop: true };
 
 const dummyHoldayTotalCount = 20;
-const dummyAvgValue = new Date();
 
 const MyPage = props => {
   const dispatch = useDispatch();
@@ -353,6 +352,14 @@ const MyPage = props => {
       previousYearDataList: [],
       monthDataList: [],
     },
+    avgAttens = {
+      currentYearAvg: 0,
+      currentMonthAvg: 0,
+      previousYearAvg: 0,
+      previousMonthAvg: 0,
+      yearDataList: [],
+      preYearDataList: []
+    },
     attens = {
       currentMonthCount: 0,
       currentYearCount: 0,
@@ -371,7 +378,7 @@ const MyPage = props => {
   const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
 
   const cardClickOpenModal = useCallback((props, category) => {
-    const list = (props.monthDataList || props.currentYearDataList) || [];
+    const list = (props.monthDataList || props.currentYearDataList || props.yearDataList) || [];
 
     openModalAction({
       contents: <ListModal 
@@ -391,11 +398,6 @@ const MyPage = props => {
     return `이번${text} 연차 ${result || 0}개 사용`;
   }, [toggle, holidays]);
 
-  /**
-   * 데이터들은 전년도 기준도 가능해야 함.
-   * toggle ? 연도별 : 월별
-   */
-
   // 지각과 야근 관련 파싱 처리.
   const dataDiff = useCallback((data) => { 
     const diff = ((toggle ? data.previousYearCount : data.previousMonthCount) - (toggle ? data.currentYearCount : data.currentMonthCount)) || 0;
@@ -410,7 +412,32 @@ const MyPage = props => {
   }, [toggle]);
 
   // 평균 시간 관련 파싱 처리.
-  
+  const valueTimeParser = useCallback((data, use = 0) => {
+    if(data) {
+      const time = use || (toggle ? data.currentYearAvg : data.currentMonthAvg) || 0;
+      const parse = (parseFloat(time) / 60).toFixed(2);
+
+      let [ hour, minute ] = parse.toString().split(".");
+
+      if(minute) {
+        const value = (60 * parseFloat(minute).toFixed(0) / 100).toFixed(0);
+
+        minute = value;
+      }
+
+      return `${hour > 0 ? `${hour}시 ` : ""}${minute > 0 ? `${minute}분` : ""}`;
+    }
+  }, [toggle]);
+
+  const infoTimeParser = useCallback((data) => {
+    const result = (toggle ? (parseFloat(data.currentYearAvg) - parseFloat(data.previousYearAvg)).toFixed(2) : (parseFloat(data.currentMonthAvg) - parseFloat(data.previousMonthAvg)).toFixed(2)) || 0;
+    
+    const time = valueTimeParser(true, result) || "00시 00분";
+
+    const diff = result > 0 ? false : true;
+
+    return `지난${toggle ? "해" : "달"}보다 ${time} ${diff ? "감소" : "증가"}`;
+  }, [toggle, valueTimeParser]);
 
   // 출근 관련 파싱 처리.
   const cardValueAtten = useMemo(() => {
@@ -476,10 +503,10 @@ const MyPage = props => {
       category: "avg", 
       url: "/img/mypage/card-2.png", 
       title: "평균 출근시간", 
-      value: dummyAvgValue, 
-      info: "지난달보다 20분 빠름", 
+      value: valueTimeParser(avgAttens), 
+      info: infoTimeParser(avgAttens), 
       src: "/img/mypage/card-clock.png", 
-      onClick: () => console.log("2", "avg") 
+      onClick: () => cardClickOpenModal(avgAttens, "avg"), 
     },
     { 
       id: 2, 
@@ -506,7 +533,10 @@ const MyPage = props => {
     cardHolidayCount,
     cardValue,
     dataDiff,
+    valueTimeParser,
+    infoTimeParser,
     tardys,
+    avgAttens,
     attens,
     cardValueAtten,
     overs,

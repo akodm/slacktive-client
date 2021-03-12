@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
-import moment from 'moment'
 
 const Container = styled.div`
   display: flex;
@@ -80,7 +79,7 @@ function Card(props) {
   const valueParser = useMemo(() => {
     let result = value;
     switch(category) {
-      case "avg": result = moment(value, "H:mm:ss").format("H시 mm분"); break;
+      case "avg": result = value; break;
       default: result = `${value}일`; break; 
     }
     return result;

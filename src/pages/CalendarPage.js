@@ -177,7 +177,7 @@ const AppleImg = styled.img`
   position: absolute;
   transition: transform ease 1s 0s;
 
-  &:active {
+  &:hover {
     transform: scale(1.2);
   }
 `;
@@ -188,7 +188,7 @@ const AnimalImg = styled.img`
   position: absolute;
   transition: transform ease 1s 0s;
   
-  &:active {
+  &:hover {
     transform: translate(-50px, 0px);
   }
 `;
