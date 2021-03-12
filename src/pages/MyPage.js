@@ -427,7 +427,7 @@ const MyPage = props => {
   const HoldayCountText = useCallback(() => {
     return <CardCountText>
       <CardCountRest>{restHolidayCount || 0}</CardCountRest>
-      { holidays.replaceCount && <CardCountAdd>{`(+${holidays.replaceCount})`}</CardCountAdd> }
+      { holidays.replaceCount ? <CardCountAdd>{`(+${holidays.replaceCount})`}</CardCountAdd> : ""}
       <CardCountTotal>/{dummyHoldayTotalCount}</CardCountTotal>
       <CardCountUnderLine />
     </CardCountText>
@@ -436,7 +436,7 @@ const MyPage = props => {
   const InfoText = useCallback(() => {
     return <CardInfoText>
       {holidays.totalCount}{infoTextFirst}
-      <CardInfoEx>{restHolidayCount || 0}번 {holidays.replaceCount && `(+${holidays.replaceCount}) `}</CardInfoEx>
+      <CardInfoEx>{restHolidayCount || 0}번 {holidays.replaceCount ? `(+${holidays.replaceCount}) ` : ""}</CardInfoEx>
       {infoTextLast}
     </CardInfoText>
   }, [restHolidayCount, holidays]);
@@ -563,7 +563,7 @@ const MyPage = props => {
               <CardImgBox>
                 <CardImg src={imageSrcGet} alt="img"/>
                 <ImgSideCount>
-                  { holidays.replaceCount && <ImgSideCountAdd>{`+${holidays.replaceCount}`}</ImgSideCountAdd> }
+                  { holidays.replaceCount ? <ImgSideCountAdd>{`+${holidays.replaceCount}`}</ImgSideCountAdd> : ""}
                   <ImgSideCountRest>{restHolidayCount || 0}</ImgSideCountRest>
                 </ImgSideCount>
               </CardImgBox>

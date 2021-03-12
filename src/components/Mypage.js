@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import styled, { css } from 'styled-components';
 import Pagination from '@material-ui/lab/Pagination';
 import moment from 'moment';
@@ -78,20 +78,24 @@ const Td = styled.td`
 `;
 
 const categorys = [
-  { type: "tardy", title: "지각 횟수", month: "월 구분", day: "지각 횟수"  },
-  { type: "avg", title: "출근 시간 내역", month: "날짜", day: "출근 시각"  },
-  { type: "atten", title: "출근 일수", month: "월 구분", day: "출근 일수"  },
-  { type: "over", title: "야근 내역", month: "날짜", day: "초과 근무시간" },
+  { type: "tardy", title: "지각 횟수", month: "월 구분", day: "지각 횟수", date: "YYYY-MM", format: "YYYY년 M월",  },
+  { type: "avg", title: "출근 시간 내역", month: "날짜", day: "출근 시각", date: "YYYY-MM-DD HH:mm", format: "YYYY. M. D (ddd)",  },
+  { type: "atten", title: "출근 일수", month: "월 구분", day: "출근 일수", date: "YYYY-MM", format: "YYYY년 M월",  },
+  { type: "over", title: "야근 내역", month: "날짜", day: "초과 근무시간", date: "YYYY-MM-DD HH:mm", format: "YYYY. M. D (ddd)", },
 ];
 
 const left = 60;
 const right = 40;
+const itemPer = 13;
+const firstPage = 1;
 
 const Mypage = props => {
   const { 
     category = "tardy", 
     list = [], 
   } = props;
+  const pageLength = useMemo(() => Math.ceil(list.length / itemPer), [list]);
+  const [ currentPage, setCurrentPage ] = useState(firstPage);
 
   const title = useMemo(() => {
     return categorys.reduce((first, data) => {
@@ -103,13 +107,43 @@ const Mypage = props => {
     }, categorys[0]);
   }, [category]);
 
-  // const redText = useCallback(() => {
-  //   return false;
-  // }, []);
+  const redText = useCallback((category, count) => {
+    if(count && props?.category === "tardy") {
+      return true;
+    }
 
-  // const dateParser = useCallback((text, time, show) => {
-  //   return moment(text, time).format(show);
-  // }, []);
+    return category === "지각" ? true : false;
+  }, [props?.category]);
+
+  const overValueParser = useCallback((time) => {
+    if(time) {
+      let [ hour, minute ] = time.toString().split(".");
+      
+      if(minute) {
+        const value = (60 * parseFloat(minute).toFixed(0) / 100).toFixed(0);
+
+        minute = value;
+      }
+
+      return `${hour > 0 ? `${hour}시간 ` : ""}${minute > 0 ? `${minute}분` : ""}`;
+    }
+  }, []);
+
+  const dataText = useCallback((text, count) => {
+    if(count) {
+      return `${count}번`;
+    }
+
+    if(props?.category === "over") {
+      return overValueParser(text);
+    }
+
+    return moment(text, "YYYY-MM-DD HH:mm").format("HH시 mm분");
+  }, [props?.category, overValueParser]);
+
+  const onPagenation = useCallback((e, v) => {
+    setCurrentPage(v);
+  }, []);
 
   return (
     <Container>
@@ -126,9 +160,17 @@ const Mypage = props => {
           <Tbody>
             {
               list[0] ? list.map((data, idx) => {
+                if(idx < itemPer * (currentPage - 1)) {
+                  return null;
+                }
+
+                if(idx >= itemPer * currentPage) {
+                  return null;
+                }
+
                 return <Tr key={idx}>
-                  <Td widthPercent={left}>{moment(data.slackTime, "YYYY-MM-DD HH:mm").format("YYYY. M. DD (ddd)")}</Td>
-                  <Td widthPercent={right}>{data.text || data.count}</Td>
+                  <Td widthPercent={left}>{moment(data.slackTime, title.date).format(title.format)}</Td>
+                  <Td widthPercent={right} redText={redText(data.category || "", data.count || 0)}>{dataText(data.over || data.slackTime, data.count || 0)}</Td>
                 </Tr>
               })
               :
@@ -138,7 +180,7 @@ const Mypage = props => {
             }
           </Tbody>
         </Table>
-        <Pagination count={10} color="primary" />
+        <Pagination defaultPage={firstPage} size="large" onChange={onPagenation} count={pageLength} color="primary" />
       </Body>
     </Container>
   );
