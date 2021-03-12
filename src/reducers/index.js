@@ -4,6 +4,7 @@ import { alertOpenCloseReducer } from './alert';
 import { modalOpenCloseReducer } from './modal';
 import { calendarEventReducer, usersInitReducer } from './calendar';
 import { loadmaskOnOffReducer } from './loadmask';
+import { mypageDataInitReducer } from './mypage';
 
 export const reducer = combineReducers({
   slackLoginReducer,
@@ -12,4 +13,5 @@ export const reducer = combineReducers({
   calendarEventReducer,
   usersInitReducer,
   loadmaskOnOffReducer,
+  mypageDataInitReducer,
 });
