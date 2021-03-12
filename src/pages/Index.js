@@ -257,16 +257,18 @@ function Index(props) {
       let tardys = requestAxios({ method: "get", url: `/commute/one/tardy` });
       let overs = requestAxios({ method: "get", url: `/commute/one/over` });
       let attens = requestAxios({ method: "get", url: `/commute/one/atten` });
+      let avgAttens = requestAxios({ method: "get", url: `/commute/one/avg` });
 
-      await Promise.all([holidays, tardys, overs, attens]).then(result => {
+      await Promise.all([holidays, tardys, overs, attens, avgAttens]).then(result => {
         holidays = result[0];
         tardys = result[1];
         overs = result[2];
         attens = result[3];
+        avgAttens = result[4];
       });
 
-      if(!holidays.result || holidays.status === 500 || !tardys.result || tardys.status === 500 || !overs.result || overs.status === 500 || !attens.result || attens.status === 500) {
-        throw new Error(holidays.message || tardys.message || overs.message || attens.message);
+      if(!holidays.result || holidays.status === 500 || !tardys.result || tardys.status === 500 || !overs.result || overs.status === 500 || !attens.result || attens.status === 500 || !avgAttens.result || avgAttens.status === 500) {
+        throw new Error(holidays.message || tardys.message || overs.message || attens.message || avgAttens.message);
       }
 
       mypageDataInitAction({ 
@@ -274,6 +276,7 @@ function Index(props) {
         tardys: tardys.response.data, 
         overs: overs.response.data,
         attens: attens.response.data,
+        avgAttens: avgAttens.response.data
       });
     } catch(err) {
       console.log(err);
