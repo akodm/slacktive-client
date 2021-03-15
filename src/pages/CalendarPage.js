@@ -504,6 +504,7 @@ function CalendarPage(props) {
 
       if(moment(new Date(), "YYYY-MM-DD").format("ddd") === "토" || moment(new Date(), "YYYY-MM-DD").format("ddd") === "일" || response.moment) {
         setTitle(`, ${timeAndText()}\n오늘은 휴일이군요!`);
+        return;
       }
 
       if(response.data && response.data[0]) {

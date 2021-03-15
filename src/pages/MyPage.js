@@ -70,6 +70,7 @@ const CardCountText = styled.div`
 
   @media (max-width: 500px) {
     margin-top: 20px;
+    text-align: center;
   }
 `;
 
@@ -378,7 +379,8 @@ const MyPage = props => {
   const openModalAction = useCallback((payload) => dispatch(openModal(payload)), [dispatch]);
 
   const cardClickOpenModal = useCallback((props, category) => {
-    const list = (props.monthDataList || props.currentYearDataList || props.yearDataList) || [];
+    let list = (props.monthDataList || props.currentYearDataList || props.yearDataList) || [];
+    list = list.reverse();
 
     openModalAction({
       contents: <ListModal 

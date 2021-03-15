@@ -49,12 +49,13 @@ const Box = styled.div`
   text-align: left;
   word-break: keep-all;
   margin: 5px;
+  border-bottom: 1px solid rgba(200, 200, 200, 0.6);
 `;
 
 const Text = styled.span`
   margin: 5px;
   font-family: 12LotteMartDream;
-  font-size: 14px;
+  font-size: 12px;
   color: black;
 `;
 
@@ -64,11 +65,11 @@ const Users = props => {
   const UsersComponents = useCallback((props) => {
     const { id, user, slackTime, start, end, count, category } = props;
     return <Box>
-      <Text>아이디: {id}</Text>
+      <Text>ID: {id}</Text>
       <Text>이름: {user?.name}</Text>
       <Text>시간: {slackTime ? moment(slackTime, "YYYY-MM-DD HH:mm").format("HH:mm") : moment(start, "YYYY-MM-DD").format("DD일") + "~" + moment(end, "YYYY-MM-DD").format("DD일")}</Text>
       <Text>분류: {category}</Text>
-      { count && <Text>{count}개 사용</Text> }
+      { count ? <Text>{count}개 사용</Text> : "" }
     </Box>
   }, []);
 
