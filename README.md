@@ -1,5 +1,5 @@
 # Cedar Slacktive Repo.
-> current version 0.1.6  
+> current version 0.2.1 
 ---
 ### Version History.
 > release update. 0.1.2
