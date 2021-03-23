@@ -2,6 +2,10 @@ import React, { useMemo, useCallback, useState } from 'react';
 import styled, { css } from 'styled-components';
 import Pagination from '@material-ui/lab/Pagination';
 import moment from 'moment';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import { useDispatch } from 'react-redux';
+import { closeModal } from '../actions/modal';
+import { openAlert } from '../actions/alert';
 
 const Container = styled.div`
   display: flex;
@@ -16,6 +20,7 @@ const Head = styled.div`
   flex-direction: column;
   min-height: 66px;
   padding: 30px 30px 13px 30px;
+  position: relative;
 `;
 
 const HeadText = styled.div`
@@ -24,6 +29,28 @@ const HeadText = styled.div`
   font-size: 18px;
   font-weight: bold;
   color: #000000;
+
+  @media (max-width: 570px) {
+    margin-left: 30px;
+  }
+`;
+
+const MobileCloseBtn = styled(NavigateBeforeIcon)`
+  display: none;
+  visibility: hidden;
+
+  @media (max-width: 570px) {
+    display: flex;
+    visibility: visible;
+    transform: scale(1.3);
+    top: 25px;
+    cursor: pointer;
+    position: absolute;
+
+    &:hover {
+      transform: scale(1.5);
+    }
+  }
 `;
 
 const HeadLine = styled.div`
@@ -75,8 +102,45 @@ const Td = styled.td`
   font-family: NanumBarunGothic;
   font-size: 20px;
   color: ${props => props.redText ? "#ff4d4d" : "#000000"};
+  
+  ${props => props.anim &&
+    css`
+      transition-property: transform, opacity;
+      transition: ease 0.3s 0s;
+      cursor: pointer;
+
+      &:hover {
+        transform: scale(1.1);
+        opacity: 0.5;
+      }
+    `
+  }
 `;
 
+const TopScrollBtn = styled.img`
+  display: none;
+  visibility: none;
+  bottom: 15px;
+  right: 15px;
+  cursor: pointer;
+  position: absolute;
+  transition-property: transform;
+  transition: ease 0.3s 0s;
+
+  @media (max-width: 570px) {
+    display: block;
+    visibility: visible;
+  }
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &:active {
+    transform: scale(1.3);
+  }
+`;
+// scrollBtn
 const categorys = [
   { type: "tardy", title: "지각 횟수", month: "월 구분", day: "지각 횟수", date: "YYYY-MM", format: "YYYY년 M월",  },
   { type: "avg", title: "출근 시간 내역", month: "날짜", day: "출근 시각", date: "YYYY-MM-DD HH:mm", format: "YYYY. M. D (ddd)",  },
@@ -90,12 +154,15 @@ const itemPer = 13;
 const firstPage = 1;
 
 const Mypage = props => {
+  const dispatch = useDispatch();
   const { 
     category = "tardy", 
     list = [], 
   } = props;
   const pageLength = useMemo(() => Math.ceil(list.length / itemPer), [list]);
   const [ currentPage, setCurrentPage ] = useState(firstPage);
+  const closeModalAction = useCallback(() => dispatch(closeModal()), [dispatch]);
+  const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
 
   const title = useMemo(() => {
     return categorys.reduce((first, data) => {
@@ -145,9 +212,14 @@ const Mypage = props => {
     setCurrentPage(v);
   }, []);
 
+  const topScrollEvent = useCallback(() => {
+    document.getElementById("head").scrollIntoView();
+  }, []);
+
   return (
     <Container>
-      <Head>
+      <Head id="head">
+        <MobileCloseBtn onClick={closeModalAction} />
         <HeadText>{title.title}</HeadText>
         <SubLayout>
           <HeadSubText widthPercent={left}>{title.month}</HeadSubText>
@@ -170,7 +242,7 @@ const Mypage = props => {
 
                 return <Tr key={idx}>
                   <Td widthPercent={left}>{moment(data.slackTime, title.date).format(title.format)}</Td>
-                  <Td widthPercent={right} redText={redText(data.category || "", data.count || 0)}>{dataText(data.over || data.slackTime, data.count || 0)}</Td>
+                  <Td widthPercent={right} anim onClick={() => openAlertAction("상세보기 혹은 수정 요청 기능이 추가될 예정입니다.")} redText={redText(data.category || "", data.count || 0)}>{dataText(data.over || data.slackTime, data.count || 0)}</Td>
                 </Tr>
               })
               :
@@ -181,6 +253,7 @@ const Mypage = props => {
           </Tbody>
         </Table>
         <Pagination defaultPage={firstPage} size="large" onChange={onPagenation} count={pageLength} color="primary" />
+        <TopScrollBtn onClick={topScrollEvent} src="/img/mypage/scrollBtn.png" alt="Scroll Btn" />
       </Body>
     </Container>
   );

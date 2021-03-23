@@ -382,11 +382,14 @@ const MyPage = props => {
     let list = (props.monthDataList || props.currentYearDataList || props.yearDataList) || [];
     list = list.reverse();
 
+    const close = window.innerWidth <= 570 ? false : true;
+
     openModalAction({
       contents: <ListModal 
         list={list}
         category={category}
       />,
+      close,
       ...calendarModalOptions
     });
   }, [openModalAction]);
