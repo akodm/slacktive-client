@@ -14,7 +14,7 @@ const BoxLayer = styled.div`
   left: 0px;
   overflow: hidden;
   position: fixed;
-  z-index: 1000;
+  z-index: 4000;
 `;
 
 const BoxOverlay = styled.div`
@@ -24,7 +24,7 @@ const BoxOverlay = styled.div`
   left: 0px;
   background-color: rgba(50, 50, 50, 0.5);
   position: absolute;
-  z-index: 1001;
+  z-index: 4001;
 `;
 
 const Box = styled.div`
@@ -37,7 +37,7 @@ const Box = styled.div`
   border-radius: 8px;
   background-color: white;
   position: absolute;
-  z-index: 1002;
+  z-index: 4002;
 `;
 
 const ContentsBox = styled.span`
