@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
+import { useSelector } from 'react-redux';
 
 const Container = styled.div`
   display: flex;
@@ -185,6 +186,7 @@ const formatTime = (time) => {
 const Confirm = props => {
   // 초기 밸류.
   const { value: values, deleteSchedule, updatePopup, disabled = false } = props;
+  const { user } = useSelector(state => state.slackLoginReducer);
 
   // 휴가관련 여부.
   const holidayIf = useMemo(() => !/출장\/미팅|회의|생일|기타/.test(values.type), [values]);
@@ -293,6 +295,9 @@ const Confirm = props => {
     { key: "delete", text: "삭제", onClick: () => deleteSchedule(values), colors: "#777777" },
   ], [deleteSchedule, popupOpen, values]);
 
+  // 본인 일정 여부.
+  const calendarUser = useMemo(() => user?.slackId === values?.slackId, [user, values]);
+
   return <Container>
     <Head>
       <HeadText>일정 확인</HeadText>
@@ -303,10 +308,14 @@ const Confirm = props => {
         return <ViewComponents {...data} key={idx} />
       })}
       <Layout>
-        {!disabled ? btns.map((data, idx) => {
-          return <SubmitButton {...data} key={idx}>{data.text}</SubmitButton>
-        })
-        : <ExText>수정 또는 삭제는 캘린더에서 해주세요.</ExText>
+        {
+          !disabled ? 
+          (calendarUser ?
+          btns.map((data, idx) => {
+            return <SubmitButton {...data} key={idx}>{data.text}</SubmitButton>
+          })
+          : "")
+          : <ExText>수정 또는 삭제는 캘린더에서 해주세요.</ExText>
         }
       </Layout>
     </Body>
