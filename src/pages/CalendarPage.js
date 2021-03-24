@@ -450,10 +450,9 @@ function CalendarPage(props) {
   }, [schedules]);
 
   // 카드 아이템.
-  // props.user.name + (participation.length ? ", " : "") => 본인 자동 포함하고 싶을 경우.
   const CardItems = useCallback((value) => {
     const { title, participation, start, end, type } = value;
-    let members = "";
+    let members = value.user.name + (participation.length ? ", " : "");
     const lineColor = cardColors.reduce((first, data) => {
       if(data.text === type) {
         return data.colors;

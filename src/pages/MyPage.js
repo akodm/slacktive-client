@@ -329,6 +329,7 @@ const holidayTagArr = [
   { category: "병가", img: "/img/mypage/holiday-0.png" },
 ];
 const calendarModalOptions = { width: 570, height: 936, backdrop: true };
+const modalCloseWidth = 570;
 
 const dummyHoldayTotalCount = 20;
 
@@ -382,7 +383,7 @@ const MyPage = props => {
     let list = (props.monthDataList || props.currentYearDataList || props.yearDataList) || [];
     list = list.reverse();
 
-    const close = window.innerWidth <= 570 ? false : true;
+    const close = window.innerWidth <= modalCloseWidth ? false : true;
 
     openModalAction({
       contents: <ListModal 

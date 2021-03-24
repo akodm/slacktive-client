@@ -71,6 +71,7 @@ const category = [
   { select: "4", text: "생일", colors: "#b0c0ff" },
   { select: "5", text: "기타", colors: "#ff98c3" },
 ];
+const titleRegExp = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/;
 
 /**
  * calendarId => 98: 휴가, 99: 일정.
@@ -180,10 +181,9 @@ const Tui = () => {
       const startEndDate = data.startIsEnd ? moment(data.start).format("YYYY년 MM월 DD일") :
       moment(data.start).format("YYYY년 MM월 DD일") + " ~ " + moment(data.end).format("YYYY년 MM월 DD일");
      
-      const titleExp = /.*(휴가|병가|오전\s*반차|오후\s*반차|대휴|연차)/;
-      const titleValidation = titleExp.exec(data.title);
+      const titleValidation = titleRegExp.exec(data.title);
 
-      if(!titleValidation || !titleValidation[1] || !titleExp.test(data.title)) {
+      if(!titleValidation || !titleValidation[1] || !titleRegExp.test(data.title)) {
         throw new Error("제목에 내용만 입력해주세요. 예) 휴가");
       }
 
@@ -260,9 +260,7 @@ const Tui = () => {
           throw new Error(message);
         }
 
-        /**
-         * 소켓 on 이벤트로 데이터 받아와서 반영.
-         */
+        // 소켓으로 가져오기.
 
         // item = scheduleParser({ ...response.result })[0];
       } else {
@@ -298,8 +296,11 @@ const Tui = () => {
       });
   
       if(e.calendarId === "98") {
-        // 휴가 처리...
-        // 휴가의 경우 실제 채널에서 메시지가 수정됨을 인지시켜주기.
+        if(window.confirm("실제 슬랙 채널에서도 메시지가 수정됩니다. 그래도 수정하시겠습니까?")) {
+          // 슬랙에서 메시지 수정 동작 처리.
+        } else {
+          return openAlertAction("취소하였습니다.");
+        }
       }
   
       if(e.calendarId === "99") {
@@ -318,7 +319,7 @@ const Tui = () => {
       console.log(err.message || err);
       loadmaskOffAction();
       closeModalAction();
-      openAlertAction("정상 처리 되지 않았습니다. " + err.message || err);
+      openAlertAction("정상 처리되지 않았습니다. " + err.message || err);
     }
   }, [loadmaskOffAction, openAlertAction, closeModalAction, calendarUpdateAction, schedules, scheduleParser, taskProcess]);
 
@@ -326,8 +327,11 @@ const Tui = () => {
   const deleteSchedule = useCallback( async (e) => {
     try {
       if(e.calendarId === "98") {
-        // 휴가 삭제 처리...
-        // 휴가의 경우 실제 채널에서 메시지가 삭제됨을 인지시켜주기.
+        if(window.confirm("실제 슬랙 채널에서도 메시지가 삭제됩니다. 그래도 삭제하시겠습니까?")) {
+          // 슬랙에서 메시지 삭제 동작 처리.
+        } else {
+          return openAlertAction("취소하였습니다.");
+        }
       }
   
       if(e.calendarId === "99") {
@@ -346,7 +350,7 @@ const Tui = () => {
       console.log(err.message |err);
       loadmaskOffAction();
       closeModalAction();
-      openAlertAction("일정이 삭제되었습니다.");
+      openAlertAction("정상 처리되지 않았습니다." + err.message || err);
     }
   }, [calendarDeleteAction, closeModalAction, openAlertAction, taskProcess, loadmaskOffAction]);
 
