@@ -18,7 +18,7 @@ const Container = styled.div`
 const Head = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 66px;
+  min-height: 86px;
   padding: 30px 30px 13px 30px;
   position: relative;
 `;
@@ -62,7 +62,6 @@ const HeadLine = styled.div`
 const Body = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   padding: 0px 30px 30px 30px;
 `;
@@ -70,6 +69,10 @@ const Body = styled.div`
 const SubLayout = styled.div`
   display: flex;
   flex-direction: row;
+
+  @media (max-width: 570px) {
+    margin-top: 20px;
+  }
 `;
 
 const HeadSubText = styled.div`
@@ -86,9 +89,11 @@ const Table = styled.table`
   width: 100%;
   margin-bottom: 30px;
 `;
+
 const Tbody = styled.tbody`
   border-bottom: 1px solid black;
 `;
+
 const Tr = styled.tr`
   ${props => !props.borderNone && 
     css`
@@ -96,6 +101,7 @@ const Tr = styled.tr`
     `
   }
 `;
+
 const Td = styled.td`
   width: ${props => props.widthPercent || "50"}%;
   padding: 15px 0px 14.5px 10px;
@@ -140,6 +146,7 @@ const TopScrollBtn = styled.img`
     transform: scale(1.3);
   }
 `;
+
 // scrollBtn
 const categorys = [
   { type: "tardy", title: "지각 횟수", month: "월 구분", day: "지각 횟수", date: "YYYY-MM", format: "YYYY년 M월",  },
