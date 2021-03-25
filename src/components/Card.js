@@ -70,7 +70,7 @@ const SrcImg = styled.img`
 `;
 
 function Card(props) {
-  const { category, url = "/img/mypage/card-1.png", title, value, info, src, onClick } = props;
+  const { category, url = "/img/mypage/card-1.png", none, title, value, info, src, onClick } = props;
   
   const onClickFunction = useCallback(() => {
     onClick && onClick();
@@ -78,19 +78,24 @@ function Card(props) {
 
   const valueParser = useMemo(() => {
     let result = value;
+
+    if(none) {
+      return result;
+    }
+
     switch(category) {
       case "avg": result = value; break;
       default: result = `${value}일`; break; 
     }
     return result;
-  }, [value, category]);
+  }, [value, category, none]);
 
   return (
     <Container url={url} onClick={onClickFunction}>
       <TitleText>{title}</TitleText>
       <Content>{value ? valueParser : "없음"}</Content>
       <InfoText>{info}</InfoText>
-      <SrcImg src={src} alt="img"/>
+      { src && <SrcImg src={src} alt="img"/> }
       <StarImg src="/img/mypage/star.png" alt="star"/>
     </Container>
   );
