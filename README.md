@@ -1,5 +1,5 @@
 # Cedar Slacktive Repo.
-> current version 0.2.1 
+> current version 0.2.2 
 ---
 ### Version History.
 > release update. 0.1.2
@@ -46,6 +46,13 @@
 ```md
 - 마이페이지 연동 작업.
 - 휴가, 네 가지의 카드, 히스토리까지 확인.
+```
+
+> update. 0.2.2
+```md
+- 마이페이지 모달 반응형 처리.
+- 다른사람의 휴가 수정 불가 처리.
+- 기타 페이지 퍼블리싱 및 로그아웃 기능.
 ```
 
 > update. 0.3.1 ( 예정 )
