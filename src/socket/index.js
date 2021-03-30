@@ -1,12 +1,15 @@
-// import socketIO from 'socket.io-client';
-// import { onEvent } from './consts';
-// import { SERVER_URL } from '../config';
+import socketIO from 'socket.io-client';
+import { onEvent, emitEvent } from './consts';
+import { SERVER_URL } from '../config';
 
-// export const initSocket = (token, callback) => {
-//   const socket = socketIO.connect(SERVER_URL, {
-//     query: `token=${token}`,
-//     transport: ['websocket']
-//   });
+export const initSocket = (param) => {
+  const socket = socketIO.connect(SERVER_URL, {
+    path: "/socket"
+  });
 
-//   // first socket on event regist..
-// };
+  socket.on(onEvent.HELLO_WORLD, (data) => {
+    param?.alert(data.text);
+  });
+
+  return socket;
+};

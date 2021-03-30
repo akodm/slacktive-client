@@ -1,5 +1,5 @@
 export const onEvent = {
-  USER_CONNECT: "user connect",
+  HELLO_WORLD: "Hello Slacktive"
 };
 
 export const emitEvent = {

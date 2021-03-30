@@ -37,7 +37,7 @@ function FirstPage(props) {
   const { setHasToken } = props;
 
   const login = useCallback(() => {
-      window.location.href = SERVER_URL + '/api/login'
+    window.location.href = SERVER_URL + '/api/login';
   }, []);
 
   const access = useCallback( async (code) => {

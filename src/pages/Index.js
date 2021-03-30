@@ -5,9 +5,12 @@ import { LOCALSTORAGE, SERVER_URL } from '../config';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { requestAxios } from '../util/request';
-import { calendarInit, usersInit } from '../actions/calendar';
+import { calendarInit, usersInit, calendarAdd, calendarDelete, calendarUpdate } from '../actions/calendar';
 import { slackLogin } from '../actions/login';
 import { mypageDataInit } from '../actions/mypage';
+import { socketInit } from '../actions/socket';
+import { initSocket } from '../socket';
+import { openAlert } from '../actions/alert';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
@@ -59,6 +62,11 @@ function Index(props) {
   const usersInitAction = useCallback((payload) => dispatch(usersInit(payload)), [dispatch]);
   const slackLoginAction = useCallback((payload) => dispatch(slackLogin(payload)), [dispatch]);
   const mypageDataInitAction = useCallback((payload) => dispatch(mypageDataInit(payload)), [dispatch]);
+  const socketInitAction = useCallback((payload) => dispatch(socketInit(payload)), [dispatch]);
+  const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
+  const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
+  const calendarUpdateAction = useCallback((payload) => dispatch(calendarUpdate(payload)), [dispatch]);
+  const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
 
   // 배경 설정.
   const backgroundColorChange = useMemo(() => {
@@ -128,6 +136,17 @@ function Index(props) {
           throw new Error(message);
         }
 
+        const socketParams = {
+          user: response.data,
+          alert: openAlertAction,
+          calendarAdd: calendarAddAction,
+          calendarUpdate: calendarUpdateAction,
+          calendarDelete: calendarDeleteAction
+        };
+
+        const socketObj = initSocket(socketParams);
+        socketInitAction(socketObj);
+
         slackLoginAction(response.data);
       }
 
@@ -141,7 +160,7 @@ function Index(props) {
       setLoad(true);
       return;
     }
-  }, [slackLoginAction]);
+  }, [slackLoginAction, socketInitAction, openAlertAction, calendarAddAction, calendarUpdateAction, calendarDeleteAction]);
 
   // 토큰 검사 실행.
   useEffect(() => {
