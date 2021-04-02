@@ -325,7 +325,9 @@ const Calendar = props => {
       }
     }
 
-    edit ? updateSchedule(values) : createSchedule(values);
+    const val = { ...values, isAllDay: values.category === "휴가" && !/반차/.test(values.title) };
+
+    edit ? updateSchedule(val) : createSchedule(val);
   }, [createSchedule, updateSchedule, edit, values]);
 
   // 폼들.

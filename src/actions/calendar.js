@@ -1,10 +1,12 @@
 export const CALENDAR_INIT = "CALENDAR_INIT";
 export const CALENDAR_ADD = "CALENDAR_ADD";
 export const CALENDAR_UPDATE = "CALENDAR_UPDATE";
+export const CALENDAR_UPDATE_SOCKET = "CALENDAR_UPDATE_SOCKET";
 export const CALENDAR_DELETE = "CALENDAR_DELTE";
 export const USERS_INIT = "USERS_INIT";
 export const calendarInit = (payload) => ({ type: CALENDAR_INIT, payload });
 export const calendarAdd = (payload) => ({ type: CALENDAR_ADD, payload });
 export const calendarUpdate = (payload) => ({ type: CALENDAR_UPDATE, payload });
+export const calendarUpdateSocket = (payload) => ({ type: CALENDAR_UPDATE_SOCKET, payload });
 export const calendarDelete = (payload) => ({ type: CALENDAR_DELETE, payload });
 export const usersInit = (payload) => ({ type: USERS_INIT, payload });

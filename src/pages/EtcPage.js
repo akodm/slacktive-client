@@ -76,6 +76,7 @@ const LogoutText = styled.span`
   color: #ff4d4d;
   font-weight: bold;
   cursor: pointer;
+  white-space: nowrap;
   transition-property: transform, color;
   transition: ease 0.3s 0s;
 

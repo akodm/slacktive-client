@@ -5,7 +5,7 @@ import { LOCALSTORAGE, SERVER_URL } from '../config';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { requestAxios } from '../util/request';
-import { calendarInit, usersInit, calendarAdd, calendarDelete, calendarUpdate } from '../actions/calendar';
+import { calendarInit, usersInit, calendarAdd, calendarDelete, calendarUpdateSocket } from '../actions/calendar';
 import { slackLogin } from '../actions/login';
 import { mypageDataInit } from '../actions/mypage';
 import { socketInit } from '../actions/socket';
@@ -65,7 +65,7 @@ function Index(props) {
   const socketInitAction = useCallback((payload) => dispatch(socketInit(payload)), [dispatch]);
   const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
   const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
-  const calendarUpdateAction = useCallback((payload) => dispatch(calendarUpdate(payload)), [dispatch]);
+  const calendarUpdateAction = useCallback((payload) => dispatch(calendarUpdateSocket(payload)), [dispatch]);
   const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
 
   // 배경 설정.
