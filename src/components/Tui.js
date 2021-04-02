@@ -102,6 +102,7 @@ const Tui = () => {
   const loadmaskOnAction = useCallback(() => dispatch(loadmaskOn()), [dispatch]);
   const loadmaskOffAction = useCallback(() => dispatch(loadmaskOff()), [dispatch]);
   const { schedules } = useSelector(state => state.calendarEventReducer);
+  const { user } = useSelector(state => state.slackLoginReducer);
 
   // 캘린더 일정 색상 파싱.
   const bgColorParser = useCallback((value) => {
@@ -115,12 +116,12 @@ const Tui = () => {
   }, []);
   
   // 데이터를 캘린더에 사용할 수 있도록 파싱.
-  const scheduleParser = useCallback((array, type) => {
+  const scheduleParser = useCallback((array) => {
     let result = Array.isArray(array) ? array : [array];
 
     return result.map((data) => {
       const bgColor = bgColorParser(data);
-      if(type === "휴가") {
+      if(data.category === "휴가") {
         return {
           ...data,
           calendarId: "98",
@@ -129,7 +130,7 @@ const Tui = () => {
           bgColor,
           type: data.category,
           category: "time",
-          isAllDay: !/반차/.test(data.category),
+          isAllDay: data.isAllDay ? data.isAllDay : (data.title ? !/반차/.test(data.title) : !/반차/.test(data.category)),
         }
       }
 
@@ -194,9 +195,88 @@ const Tui = () => {
           "authorization": token
         }, 
         data: {
-          text: `[준명] ${startEndDate} ${titleValidation[1]}`,
+          text: `[${user?.name}] ${startEndDate} ${titleValidation[1]}`,
           channel: HOLIDAY_CHANNEL,
           as_user: true
+        }
+      });
+
+      if(!result || status === 500) {
+        throw new Error(message);
+      }
+
+      return {
+        response,
+        result,
+        message
+      }
+    } catch(err) {
+      return {
+        err: true,
+        message: err.message || err
+      };
+    }
+  }, [loadmaskOnAction, user]);
+
+  // 휴가 채널의 메시지 수정하기.
+  const messageUpdateHolidayChannel = useCallback( async (data) => {
+    try {
+      loadmaskOnAction();
+
+      const { token } = tokenReturn();
+
+      const startEndDate = data.startIsEnd ? moment(data.start).format("YYYY년 MM월 DD일") :
+      moment(data.start).format("YYYY년 MM월 DD일") + " ~ " + moment(data.end).format("YYYY년 MM월 DD일");
+     
+      const titleValidation = titleRegExp.exec(data.title);
+
+      if(!titleValidation || !titleValidation[1] || !titleRegExp.test(data.title)) {
+        throw new Error("제목에 내용만 입력해주세요. 예) 휴가");
+      }
+
+      const { response, result, status, message } = await requestAxios({ 
+        method: "put", 
+        url: `/api/message/update`, 
+        headers: {
+          "authorization": token
+        }, 
+        data: {
+          text: `[${user.name}] ${startEndDate} ${titleValidation[1]}`,
+          channel: HOLIDAY_CHANNEL,
+          as_user: true,
+          ts: data.ts
+        }
+      });
+
+      if(!result || status === 500) {
+        throw new Error(message);
+      }
+
+      return {
+        response,
+        result,
+        message
+      }
+    } catch(err) {
+      return {
+        err: true,
+        message: err.message || err
+      };
+    }
+  }, [loadmaskOnAction, user]);
+
+  // 휴가 채널의 메시지 삭제하기.
+  const messageDeleteHolidayChannel = useCallback( async (data) => {
+    try {
+      loadmaskOnAction();
+
+      const { token } = tokenReturn();
+
+      const { response, result, status, message } = await requestAxios({ 
+        method: "delete", 
+        url: `/api/message/delete?ts=${data.ts}&channel=${HOLIDAY_CHANNEL}`, 
+        headers: {
+          "authorization": token
         }
       });
 
@@ -259,10 +339,6 @@ const Tui = () => {
         if(!result) {
           throw new Error(message);
         }
-
-        // 소켓으로 가져오기.
-
-        // item = scheduleParser({ ...response.result })[0];
       } else {
         const { result, message, response } = await taskProcess(data, "post", "/task/add/one");
 
@@ -287,17 +363,24 @@ const Tui = () => {
 
   // 일정 수정.
   const updateSchedule = useCallback( async (e) => {
+    let message = "";
+
     try {
       const newItem = schedules.map(data => {
         if(data.id === e.id && data.calendarId === e.calendarId) {
           return { ...scheduleParser(e)[0] };
         }
+
         return { ...data };
       });
   
       if(e.calendarId === "98") {
         if(window.confirm("실제 슬랙 채널에서도 메시지가 수정됩니다. 그래도 수정하시겠습니까?")) {
-          // 슬랙에서 메시지 수정 동작 처리.
+          const { result, message } = await messageUpdateHolidayChannel(e);
+
+          if(!result) {
+            throw new Error(message);
+          }
         } else {
           return openAlertAction("취소하였습니다.");
         }
@@ -312,23 +395,27 @@ const Tui = () => {
       }
   
       calendarUpdateAction(newItem)
-      loadmaskOffAction();
-      closeModalAction();
-      openAlertAction("일정이 수정되었습니다.");
+      message = "일정이 수정되었습니다.";
     } catch(err) {
       console.log(err.message || err);
+      message = "정상 처리되지 않았습니다. " + err.message || err;
+    } finally {
       loadmaskOffAction();
       closeModalAction();
-      openAlertAction("정상 처리되지 않았습니다. " + err.message || err);
+      openAlertAction(message);
     }
-  }, [loadmaskOffAction, openAlertAction, closeModalAction, calendarUpdateAction, schedules, scheduleParser, taskProcess]);
+  }, [loadmaskOffAction, messageUpdateHolidayChannel, openAlertAction, closeModalAction, calendarUpdateAction, schedules, scheduleParser, taskProcess]);
 
   // 일정 삭제.
   const deleteSchedule = useCallback( async (e) => {
     try {
       if(e.calendarId === "98") {
         if(window.confirm("실제 슬랙 채널에서도 메시지가 삭제됩니다. 그래도 삭제하시겠습니까?")) {
-          // 슬랙에서 메시지 삭제 동작 처리.
+          const { result, message } = await messageDeleteHolidayChannel(e);
+
+          if(!result) {
+            throw new Error(message);
+          }
         } else {
           return openAlertAction("취소하였습니다.");
         }
@@ -352,7 +439,7 @@ const Tui = () => {
       closeModalAction();
       openAlertAction("정상 처리되지 않았습니다." + err.message || err);
     }
-  }, [calendarDeleteAction, closeModalAction, openAlertAction, taskProcess, loadmaskOffAction]);
+  }, [calendarDeleteAction, messageDeleteHolidayChannel, closeModalAction, openAlertAction, taskProcess, loadmaskOffAction]);
 
   // 일정 생성 팝업 오픈.
   const createPopup = useCallback(({ start, end, isAllDay }) => {

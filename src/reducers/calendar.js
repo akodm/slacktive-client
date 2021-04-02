@@ -1,4 +1,4 @@
-import { CALENDAR_INIT, CALENDAR_ADD, CALENDAR_UPDATE, CALENDAR_DELETE, USERS_INIT } from '../actions/calendar';
+import { CALENDAR_INIT, CALENDAR_ADD, CALENDAR_UPDATE, CALENDAR_UPDATE_SOCKET, CALENDAR_DELETE, USERS_INIT } from '../actions/calendar';
 
 const initState = {
   schedules: [],
@@ -21,6 +21,19 @@ export const calendarEventReducer = (state = initState, action) => {
       return {
         ...state,
         schedules: action.payload,
+      }
+    case CALENDAR_UPDATE_SOCKET:
+      return {
+        ...state,
+        schedules: state.schedules.map(value => {
+          if(value.id === action.payload.id) {
+            if(value.calendarId === action.payload.calendarId) {
+              return { ...action.payload };
+            }
+          }
+
+          return { ...value };
+        })
       }
     case CALENDAR_DELETE:
       return {
