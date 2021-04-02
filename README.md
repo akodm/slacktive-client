@@ -1,5 +1,5 @@
 # Cedar Slacktive Repo.
-> current version 0.2.2 
+> current version 0.3.1 
 ---
 ### Version History.
 > release update. 0.1.2
@@ -55,10 +55,8 @@
 - 기타 페이지 퍼블리싱 및 로그아웃 기능.
 ```
 
-> update. 0.3.1 ( 예정 )
+> update. 0.3.1
 ```md
-- 그룹페이지 퍼블리싱.
-- 기타페이지 퍼블리싱.
-- 그룹페이지 연동.
-- 기타페이지 기능 작업.
+- 유자 소켓 연동.
+- 캘린더 페이지의 휴가 기능도 이제 동작.
 ```
