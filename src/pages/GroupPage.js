@@ -248,8 +248,8 @@ const GroupPage = () => {
                     <Td widthPercent="10">{row.id}</Td>
                     <Td widthPercent="30">{row.name}</Td>
                     <Td widthPercent="15" textColor={colorSet(row.useHoliday, "#4ea9ff")}>{row.useHoliday}</Td>
-                    <Td widthPercent="10" textColor={colorSet(row.useHoliday, "#ff4d4d")}>{row.tardyCount}</Td>
-                    <Td widthPercent="10" textColor={colorSet(row.useHoliday, "#f2994a")}>{row.overCount}</Td>
+                    <Td widthPercent="10" textColor={colorSet(row.tardyCount, "#ff4d4d")}>{row.tardyCount}</Td>
+                    <Td widthPercent="10" textColor={colorSet(row.overCount, "#f2994a")}>{row.overCount}</Td>
                     <Td widthPercent="15">{row.totalHoliday}</Td>
                     <Td widthPercent="10">{row.attenCount}</Td>
                   </Tr>
