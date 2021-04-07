@@ -259,7 +259,7 @@ const Mypage = props => {
             }
           </Tbody>
         </Table>
-        <Pagination defaultPage={firstPage} size="large" onChange={onPagenation} count={pageLength} color="primary" />
+        <Pagination page={currentPage} defaultPage={firstPage} size="large" onChange={onPagenation} count={pageLength} color="primary" />
         <TopScrollBtn onClick={topScrollEvent} src="/img/mypage/scrollBtn.png" alt="Scroll Btn" />
       </Body>
     </Container>

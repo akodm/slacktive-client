@@ -6,8 +6,8 @@ const Box = styled.div`
   flex-direction: ${props => !props.toggle ? "row" : "row-reverse"};
   justify-content: space-evenly;
   align-items: center;
-  width: ${props => props.width_ || "84"}px;
-  height: 30px;
+  min-width: ${props => props.width_ || "84"}px;
+  min-height: 30px;
   border-radius: 27.5px;
   background-color: ${props => !props.toggle ? "#2e3681" : "#812e2e"};
   cursor: pointer;
