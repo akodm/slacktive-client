@@ -23,7 +23,7 @@ const scheduleParser = (array, type) => {
 export const initSocket = (param) => {
   const socket = socketIO.connect(SERVER_URL, {
     path: "/socket",
-    transport: ["websocket"]
+    transports: ["websocket"]
   });
 
   // 초기 로그인.
