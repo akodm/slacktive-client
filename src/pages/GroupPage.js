@@ -175,7 +175,7 @@ const GroupPage = () => {
     if(Array.isArray(array)) {
       for(let i = 0; i < array.length; i++) {
         if(array[i].slackId === slackId) {
-          count += array[i][key] ? parseInt(array[i][key]) : 0;
+          count += array[i][key] ? parseFloat(array[i][key]) : 0;
           break;
         }
       }
