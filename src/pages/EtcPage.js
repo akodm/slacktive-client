@@ -96,7 +96,7 @@ const BoxLine = styled.div`
 
 const etcTitleText = "기타";
 const bottomTitleText = "내 계정 및 앱 정보";
-const VERSION = "0.3.2";
+const VERSION = "0.3.3";
 
 const EtcPage = () => {
   const dispatch = useDispatch();
