@@ -11,6 +11,7 @@ import { mypageDataInit } from '../actions/mypage';
 import { socketInit } from '../actions/socket';
 import { initSocket } from '../socket';
 import { openAlert } from '../actions/alert';
+import { groupDataInit } from '../actions/group';
 
 import FirstPage from  './FirstPage';
 import CalendarPage from './CalendarPage';
@@ -67,6 +68,7 @@ function Index(props) {
   const calendarAddAction = useCallback((payload) => dispatch(calendarAdd(payload)), [dispatch]);
   const calendarUpdateAction = useCallback((payload) => dispatch(calendarUpdateSocket(payload)), [dispatch]);
   const calendarDeleteAction = useCallback((payload) => dispatch(calendarDelete(payload)), [dispatch]);
+  const groupDataInitAction = useCallback((payload) => dispatch(groupDataInit(payload)), [dispatch]);
 
   // 배경 설정.
   const backgroundColorChange = useMemo(() => {
@@ -176,7 +178,9 @@ function Index(props) {
         throw new Error(message);
       }
 
-      usersInitAction(response.data);
+      if(response?.data) {
+        usersInitAction(response.data);
+      }
     } catch(err) {
       console.log(err);
       window.alert(err.message || err);
@@ -243,31 +247,52 @@ function Index(props) {
         throw new Error(message || taskMessage);
       }
 
-      const parseItemTask = scheduleParser(taskResponse.data, "일정");
-      const parseItem = scheduleParser(response.data, "휴가");
-
-      const newItems = [];
-      
-      parseItemTask.forEach(data => {
-        newItems.push({ ...data });
-      });
-
-      parseItem.forEach(data => {
-        newItems.push({ ...data });
-      });
-
-      calendarInitAction(newItems);
+      if(taskResponse?.data && response?.data) {
+        const parseItemTask = scheduleParser(taskResponse.data, "일정");
+        const parseItem = scheduleParser(response.data, "휴가");
+  
+        const newItems = [];
+        
+        parseItemTask.forEach(data => {
+          newItems.push({ ...data });
+        });
+  
+        parseItem.forEach(data => {
+          newItems.push({ ...data });
+        });
+  
+        calendarInitAction(newItems);
+      }
     } catch(err) {
       console.log(err);
       window.alert(err.message || err);
     }
   }, [calendarInitAction, scheduleParser]);
 
+  // 그룹 페이지 데이터 이닛.
+  const initGroupData = useCallback( async () => {
+    try {
+      const { response, result, status, message } = await requestAxios({ method: "get", url: `/commute/user/all` });
+
+      if(!result || status === 500) {
+        throw new Error(message);
+      }
+
+      if(response?.data) {
+        groupDataInitAction({ ...response.data });
+      }
+    } catch(err) {
+      console.log(err);
+      window.alert(err.message || err);
+    }
+  }, [groupDataInitAction]);
+
   // 토큰 정상 처리 후 데이터 이닛.
   useEffect(() => {
     hasToken && initSchedule();
     hasToken && allUserInit();
-  }, [hasToken, initSchedule, allUserInit]);
+    hasToken && initGroupData();
+  }, [hasToken, initSchedule, allUserInit, initGroupData]);
 
   // 마이페이지 초기 데이터 가져오기.
   const mypageDataInitEvent = useCallback( async () => {
@@ -290,13 +315,15 @@ function Index(props) {
         throw new Error(holidays.message || tardys.message || overs.message || attens.message || avgAttens.message);
       }
 
-      mypageDataInitAction({ 
-        holidays: holidays.response.data, 
-        tardys: tardys.response.data, 
-        overs: overs.response.data,
-        attens: attens.response.data,
-        avgAttens: avgAttens.response.data
-      });
+      if(holidays?.response?.data && tardys?.response?.data && overs?.response?.data && attens?.response?.data && avgAttens?.response?.data) {
+        mypageDataInitAction({ 
+          holidays: holidays.response.data, 
+          tardys: tardys.response.data, 
+          overs: overs.response.data,
+          attens: attens.response.data,
+          avgAttens: avgAttens.response.data
+        });
+      }
     } catch(err) {
       console.log(err);
       window.alert(err.message || err);

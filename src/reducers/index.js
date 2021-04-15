@@ -6,6 +6,7 @@ import { calendarEventReducer, usersInitReducer } from './calendar';
 import { loadmaskOnOffReducer } from './loadmask';
 import { mypageDataInitReducer } from './mypage';
 import { socketInitReducer } from './socket';
+import { groupDataInitReducer } from './group';
 
 export const reducer = combineReducers({
   slackLoginReducer,
@@ -16,4 +17,5 @@ export const reducer = combineReducers({
   loadmaskOnOffReducer,
   mypageDataInitReducer,
   socketInitReducer,
+  groupDataInitReducer,
 });

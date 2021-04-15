@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import styled, { css } from 'styled-components';
 import Pagination from '@material-ui/lab/Pagination';
+import { useSelector } from 'react-redux';
 import { AnimatedWrapper } from '../components/PageAnim';
 import Toggle from '../components/Toggle';
 
@@ -139,22 +140,6 @@ const ButtonLayout = styled.div`
   align-items: center;
 `;
 
-const dummyArray = [
-  { id: 1, name: "hong gil dong kim", useHoliday: 12.5, tardyCount: 20.5, overCount: 11, totalHoliday: 25.5, attenCount: 21.5 },
-  { id: 2, name: "hong gil dong", useHoliday: 0, tardyCount: 0, overCount: 0, totalHoliday: 0, attenCount: 0 },
-  { id: 3, name: "홍길동", useHoliday: 15, tardyCount: 0, overCount: 0, totalHoliday: 25, attenCount: 21 },
-  { id: 4, name: "홍길동", useHoliday: 15, tardyCount: 0, overCount: 1, totalHoliday: 21, attenCount: 21 },
-  { id: 5, name: "홍길동", useHoliday: 1, tardyCount: 20, overCount: 1, totalHoliday: 2, attenCount: 2 },
-  { id: 6, name: "홍길동", useHoliday: 12.5, tardyCount: 20.5, overCount: 0, totalHoliday: 5, attenCount: 21.5 },
-  { id: 7, name: "홍길동", useHoliday: 12.5, tardyCount: 20, overCount: 0, totalHoliday: 21, attenCount: 21 },
-  { id: 8, name: "홍길동", useHoliday: 1, tardyCount: 2, overCount: 0, totalHoliday: 21, attenCount: 2 },
-  { id: 9, name: "홍길동", useHoliday: 12.5, tardyCount: 20, overCount: 0, totalHoliday: 21, attenCount: 21.5 },
-  { id: 10, name: "홍길동", useHoliday: 12.5, tardyCount: 0, overCount: 1, totalHoliday: 21, attenCount: 21.5 },
-  { id: 11, name: "홍길동", useHoliday: 15, tardyCount: 0, overCount: 0, totalHoliday: 21, attenCount: 21.5 },
-  { id: 12, name: "홍길동", useHoliday: 12.5, tardyCount: 20, overCount: 0, totalHoliday: 21, attenCount: 21.5 },
-  { id: 13, name: "홍길동", useHoliday: 1.5, tardyCount: 0, overCount: 0, totalHoliday: 21, attenCount: 25 },
-];
-
 const topTds = [
   { key: "0", name: "순번", widthPercent: "10" },
   { key: "1", name: "이름", widthPercent: "30" },
@@ -172,7 +157,78 @@ const GroupPage = () => {
   const [ windowSize, setWindowSize ] = useState(window.innerWidth);
   const [ currentPage, setCurrentPage ] = useState(firstPage);
   const [ toggle, setToggle ] = useState(false);
-  const pageLength = useMemo(() => Math.ceil(dummyArray.length / itemPer), []);
+  const { 
+    monthUseHolidays = [],
+    yearUseHolidays = [],
+    monthTardys = [],
+    yearTardys = [],
+    monthOvers = [],
+    yearOvers = [],
+    users = [],
+    monthAttens = [],
+    yearAttens = [] 
+  } = useSelector(state => state.groupDataInitReducer);
+
+  const dispatchForCount = useCallback((array, slackId, key) => {
+    let count = 0;
+
+    if(Array.isArray(array)) {
+      for(let i = 0; i < array.length; i++) {
+        if(array[i].slackId === slackId) {
+          count += array[i][key] ? parseInt(array[i][key]) : 0;
+          break;
+        }
+      }
+
+      return count;
+    }
+
+    return array;
+  }, []);
+
+  const sortedDataArray = useMemo(() => {
+    return users[0] ? users.map(data => {
+      const id = data.id;
+      const name = data.name;
+      const slackId = data.slackId;
+
+      const monthUseHolidayCount = dispatchForCount(monthUseHolidays, slackId, "use") || 0;
+      const yearUseHolidayCount = dispatchForCount(yearUseHolidays, slackId, "use") || 0;
+      const monthTardyCount = dispatchForCount(monthTardys, slackId, "tardy") || 0;
+      const yearTardyCount = dispatchForCount(yearTardys, slackId, "tardy") || 0;
+      const monthOverCount = dispatchForCount(monthOvers, slackId, "over") || 0;
+      const yearOverCount = dispatchForCount(yearOvers, slackId, "over") || 0;
+      const totalHolidayCount = dispatchForCount(users, slackId, "holiday") || 0;
+      const monthAttenCount = dispatchForCount(monthAttens, slackId, "count") || 0;
+      const yearAttenCount = dispatchForCount(yearAttens, slackId, "count") || 0;
+
+      return {
+        id,
+        name,
+        slackId,
+        monthUseHolidayCount,
+        yearUseHolidayCount,
+        monthTardyCount,
+        yearTardyCount,
+        monthOverCount,
+        yearOverCount,
+        totalHolidayCount,
+        monthAttenCount,
+        yearAttenCount
+      };
+    })
+    :
+    [];
+  }, [
+    monthUseHolidays, yearUseHolidays,
+    monthTardys, yearTardys,
+    monthOvers, yearOvers,
+    monthAttens, yearAttens,
+    users,
+    dispatchForCount
+  ]);
+
+  const pageLength = useMemo(() => Math.ceil(sortedDataArray.length / itemPer), [sortedDataArray]);
 
   const toggleSet = useCallback(() => setToggle(!toggle), [toggle]);
 
@@ -235,7 +291,7 @@ const GroupPage = () => {
           <TableBot>
             <Tbody>
               {
-                dummyArray.map((row, idx) => {
+                sortedDataArray.map((row, idx) => {
                   if(idx < itemPer * (currentPage - 1)) {
                     return null;
                   }
@@ -244,14 +300,26 @@ const GroupPage = () => {
                     return null;
                   }
 
-                  return <Tr key={row.id} anim>
+                  if(toggle) {
+                    return <Tr key={idx} anim>
+                      <Td widthPercent="10">{row.id}</Td>
+                      <Td widthPercent="30">{row.name}</Td>
+                      <Td widthPercent="15" textColor={colorSet(row.yearUseHolidayCount, "#4ea9ff")}>{row.yearUseHolidayCount}</Td>
+                      <Td widthPercent="10" textColor={colorSet(row.yearTardyCount, "#ff4d4d")}>{row.yearTardyCount}</Td>
+                      <Td widthPercent="10" textColor={colorSet(row.yearOverCount, "#f2994a")}>{row.yearOverCount}</Td>
+                      <Td widthPercent="15">{row.totalHolidayCount}</Td>
+                      <Td widthPercent="10">{row.yearAttenCount}</Td>
+                    </Tr>
+                  }
+
+                  return <Tr key={idx} anim>
                     <Td widthPercent="10">{row.id}</Td>
                     <Td widthPercent="30">{row.name}</Td>
-                    <Td widthPercent="15" textColor={colorSet(row.useHoliday, "#4ea9ff")}>{row.useHoliday}</Td>
-                    <Td widthPercent="10" textColor={colorSet(row.tardyCount, "#ff4d4d")}>{row.tardyCount}</Td>
-                    <Td widthPercent="10" textColor={colorSet(row.overCount, "#f2994a")}>{row.overCount}</Td>
-                    <Td widthPercent="15">{row.totalHoliday}</Td>
-                    <Td widthPercent="10">{row.attenCount}</Td>
+                    <Td widthPercent="15" textColor={colorSet(row.monthUseHolidayCount, "#4ea9ff")}>{row.monthUseHolidayCount}</Td>
+                    <Td widthPercent="10" textColor={colorSet(row.monthTardyCount, "#ff4d4d")}>{row.monthTardyCount}</Td>
+                    <Td widthPercent="10" textColor={colorSet(row.monthOverCount, "#f2994a")}>{row.monthOverCount}</Td>
+                    <Td widthPercent="15">{row.totalHolidayCount}</Td>
+                    <Td widthPercent="10">{row.monthAttenCount}</Td>
                   </Tr>
                 })
               }
@@ -263,7 +331,7 @@ const GroupPage = () => {
         </TablePaper>
       </TopWrapper>
     </Container>
-  }, [colorSet, toggleSet, onPagenation, currentPage, pageLength, toggle, windowSize]);
+  }, [colorSet, toggleSet, onPagenation, currentPage, pageLength, toggle, windowSize, sortedDataArray]);
 
   return (
     <AnimatedWrapper>
