@@ -349,7 +349,7 @@ function CalendarPage(props) {
   const [ holidays, setHolidays ] = useState([]);
 
   // 브라우저 리사이즈.
-  const browserHandler = useCallback((e) => {
+  const browserHandler = useCallback(() => {
     setWindowSize(window.innerWidth);
   }, []);
 
