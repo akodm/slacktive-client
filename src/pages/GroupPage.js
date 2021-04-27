@@ -9,6 +9,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100vh;
 `;
 
 const TopWrapper = styled.div`
@@ -33,10 +34,10 @@ const TablePaper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 810px;
   background-color: white;
   border-radius: 20px;
   background-color: #ffffff;
+  margin-bottom: 87px;
 `;
 
 const TableHead = styled.div`
@@ -138,6 +139,38 @@ const ButtonLayout = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 37px;
+`;
+
+const ImageLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1 0 auto;
+  position: relative;
+`;
+
+const GroundImg = styled.img`
+  height: 40px;
+  width: 100%;
+`;
+
+const LeftImg = styled.img`
+  width: 163.8px;
+  height: 52px;
+  object-fit: contain;
+  left: 0;
+  bottom: 25px;
+  position: absolute;
+`;
+
+const RightImg = styled.img`
+  width: 84px;
+  height: 52px;
+  object-fit: contain;
+  right: 0;
+  bottom: 25px;
+  position: absolute;
 `;
 
 const topTds = [
@@ -330,6 +363,11 @@ const GroupPage = () => {
           </ButtonLayout>
         </TablePaper>
       </TopWrapper>
+      <ImageLayout>
+        <GroundImg src="/img/group/ground.png" alt="img" />
+        <LeftImg src="/img/group/left.png" alt="img" />
+        <RightImg src="/img/group/right.png" alt="img" />
+      </ImageLayout>
     </Container>
   }, [colorSet, toggleSet, onPagenation, currentPage, pageLength, toggle, windowSize, sortedDataArray]);
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import Pagination from '@material-ui/lab/Pagination';
 import moment from 'moment';
@@ -6,6 +6,7 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import { useDispatch } from 'react-redux';
 import { closeModal } from '../actions/modal';
 import { openAlert } from '../actions/alert';
+import BlockOutlinedIcon from '@material-ui/icons/BlockOutlined';
 
 const Container = styled.div`
   display: flex;
@@ -134,6 +135,31 @@ const TopScrollBtn = styled.img`
   transition: ease 0.3s 0s;
 
   @media (max-width: 570px) {
+    display: ${props => props.view ? "block" : "none"};
+    visibility: ${props => props.view ? "visible" : "none"};
+  }
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &:active {
+    transform: scale(1.3);
+  }
+`;
+
+const ScrollBtnDisableBtn = styled(BlockOutlinedIcon)`
+  display: none;
+  visibility: none;
+  bottom: ${props => props.view ? "65" : "10"}px;
+  right: 10px;
+  cursor: pointer;
+  position: absolute;
+  transition-property: transform;
+  transition: ease 0.3s 0s;
+  opacity: 0.7;
+
+  @media (max-width: 570px) {
     display: block;
     visibility: visible;
   }
@@ -168,8 +194,24 @@ const Mypage = props => {
   } = props;
   const pageLength = useMemo(() => Math.ceil(list.length / itemPer), [list]);
   const [ currentPage, setCurrentPage ] = useState(firstPage);
+  const [ windowSize, setWindowSize ] = useState(window.innerWidth);
+  const [ view, setView ] = useState(false);
   const closeModalAction = useCallback(() => dispatch(closeModal()), [dispatch]);
   const openAlertAction = useCallback((payload) => dispatch(openAlert(payload)), [dispatch]);
+
+  // 브라우저 리사이즈.
+  const browserHandler = useCallback(() => {
+    setWindowSize(window.innerWidth);
+  }, []);
+
+  // 브라우저 리사이즈 이벤트 등록.
+  useEffect(() => {
+    window.addEventListener('resize', browserHandler);
+
+    return () => window.removeEventListener('resize', browserHandler);
+  }, [browserHandler]);
+
+  const scrollButtonView = useMemo(() => windowSize < 380 ? "small" : "large", [windowSize]);
 
   const title = useMemo(() => {
     return categorys.reduce((first, data) => {
@@ -223,6 +265,12 @@ const Mypage = props => {
     document.getElementById("head").scrollIntoView();
   }, []);
 
+  const viewToggle = useCallback(() => {
+    setView(!view);
+  }, [view]);
+
+  console.log(view);
+
   return (
     <Container>
       <Head id="head">
@@ -259,8 +307,9 @@ const Mypage = props => {
             }
           </Tbody>
         </Table>
-        <Pagination page={currentPage} defaultPage={firstPage} size="large" onChange={onPagenation} count={pageLength} color="primary" />
-        <TopScrollBtn onClick={topScrollEvent} src="/img/mypage/scrollBtn.png" alt="Scroll Btn" />
+        <Pagination page={currentPage} siblingCount={0} defaultPage={firstPage} size={scrollButtonView} onChange={onPagenation} count={pageLength} color="primary" />
+        <TopScrollBtn view={view} onClick={topScrollEvent} src="/img/mypage/scrollBtn.png" alt="Scroll Btn" />
+        <ScrollBtnDisableBtn view={view} onClick={viewToggle} />
       </Body>
     </Container>
   );
