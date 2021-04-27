@@ -269,8 +269,6 @@ const Mypage = props => {
     setView(!view);
   }, [view]);
 
-  console.log(view);
-
   return (
     <Container>
       <Head id="head">
@@ -308,8 +306,8 @@ const Mypage = props => {
           </Tbody>
         </Table>
         <Pagination page={currentPage} siblingCount={0} defaultPage={firstPage} size={scrollButtonView} onChange={onPagenation} count={pageLength} color="primary" />
-        <TopScrollBtn view={view} onClick={topScrollEvent} src="/img/mypage/scrollBtn.png" alt="Scroll Btn" />
-        <ScrollBtnDisableBtn view={view} onClick={viewToggle} />
+        <TopScrollBtn view={view ? "true" : null} onClick={topScrollEvent} src="/img/mypage/scrollBtn.png" alt="Scroll Btn" />
+        <ScrollBtnDisableBtn view={view ? "true" : null} onClick={viewToggle} />
       </Body>
     </Container>
   );
