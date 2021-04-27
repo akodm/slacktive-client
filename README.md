@@ -1,5 +1,5 @@
 # Cedar Slacktive Repo.
-> current version 0.3.3 
+> current version 0.4 
 ---
 ### Version History.
 > release update. 0.1.2
@@ -70,4 +70,9 @@
 > update. 0.3.3
 ```md
 - 그룹페이지 연동 작업.
+```
+
+> update. 0.4
+```md
+- 그룹페이지 퍼블리싱 완료 및 모달까지 작업.
 ```
